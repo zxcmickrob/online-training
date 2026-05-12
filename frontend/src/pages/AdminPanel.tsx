@@ -1,160 +1,133 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import api from '../api/axios';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-interface Task {
+interface UserStat {
   id: number;
-  number: number;
-  title: string;
-  question: string;
-  answer: string;
+  username: string;
+  role: string;
+  solved_count: number;
 }
 
 const AdminPanel: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  
-  // Form states
-  const [number, setNumber] = useState('');
-  const [title, setTitle] = useState('');
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  
-  const navigate = useNavigate();
+  const [users, setUsers] = useState<UserStat[]>([]);
+  const { logout } = useAuth();
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/users');
+      setUsers(res.data);
+    } catch (err) {
+      console.error('Failed to fetch users', err);
+    }
+  };
 
   useEffect(() => {
-    fetchTasks();
+    fetchUsers();
   }, []);
 
-  const fetchTasks = async () => {
+  const handleDeleteUser = async (id: number) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
     try {
-      const res = await api.get('/tasks');
-      setTasks(res.data);
-    } catch (err) {
-      console.error('Failed to fetch tasks', err);
-    }
-  };
-
-  const resetForm = () => {
-    setEditingTask(null);
-    setNumber('');
-    setTitle('');
-    setQuestion('');
-    setAnswer('');
-  };
-
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-    setNumber(task.number.toString());
-    setTitle(task.title);
-    setQuestion(task.question);
-    setAnswer(task.answer);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту задачу?')) return;
-    try {
-      await api.delete(`/tasks/${id}`);
-      fetchTasks();
-    } catch (err) {
-      alert('Ошибка при удалении');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const taskData = {
-      number: parseInt(number),
-      title,
-      question,
-      answer
-    };
-
-    try {
-      if (editingTask) {
-        await api.put(`/tasks/${editingTask.id}`, taskData);
-        alert('Задача обновлена!');
-      } else {
-        await api.post('/tasks', taskData);
-        alert('Задача создана!');
-      }
-      resetForm();
-      fetchTasks();
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Ошибка при сохранении');
+      await api.delete(`/users/${id}`);
+      alert('Пользователь удален');
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Ошибка при удалении');
     }
   };
 
   return (
-    <div className="admin-container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Панель администратора</h1>
-        <button className="secondary" onClick={() => navigate('/')}>На главную</button>
+    <div style={{ paddingBottom: '100px' }}>
+      <header style={{ marginBottom: '60px' }}>
+        <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
+          Доступ: Преподаватель
+        </span>
+        <h1>Статистика учеников</h1>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* Task Form */}
-        <section className="card">
-          <h2>{editingTask ? 'Редактировать задачу' : 'Создать новую задачу'}</h2>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <input 
-              type="number" 
-              placeholder="Номер задания" 
-              value={number} 
-              onChange={e => setNumber(e.target.value)} 
-              required 
-            />
-            <input 
-              type="text" 
-              placeholder="Заголовок" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
-              required 
-            />
-            <textarea 
-              placeholder="Текст вопроса" 
-              value={question} 
-              onChange={e => setQuestion(e.target.value)} 
-              rows={4}
-            />
-            <input 
-              type="text" 
-              placeholder="Правильный ответ" 
-              value={answer} 
-              onChange={e => setAnswer(e.target.value)} 
-              required
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" className="primary">
-                {editingTask ? 'Сохранить изменения' : 'Создать задачу'}
-              </button>
-              {editingTask && (
-                <button type="button" className="secondary" onClick={resetForm}>Отмена</button>
-              )}
-            </div>
-          </form>
-        </section>
-
-        {/* Task List */}
-        <section>
-          <h2>Список всех задач</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {tasks.map(task => (
-              <div key={task.id} className="card" style={{ padding: '1rem', marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <strong>№{task.number}</strong>: {task.title}
-                  </div>
-                  <div style={{ display: 'flex', gap: '5px' }}>
-                    <button className="secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleEdit(task)}>Edit</button>
-                    <button className="danger" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleDelete(task.id)}>Delete</button>
-                  </div>
-                </div>
+      <div className="bento-grid">
+        <motion.div 
+          className="bento-card" 
+          style={{ gridColumn: 'span 12' }}
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Зарегистрированные пользователи ({users.length})</h3>
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--text-p)' }}>
+                  <th style={{ padding: '15px 10px', fontWeight: '600' }}>ID</th>
+                  <th style={{ padding: '15px 10px', fontWeight: '600' }}>Логин (Имя)</th>
+                  <th style={{ padding: '15px 10px', fontWeight: '600' }}>Роль</th>
+                  <th style={{ padding: '15px 10px', fontWeight: '600' }}>Решено задач</th>
+                  <th style={{ padding: '15px 10px', fontWeight: '600' }}>Уровень</th>
+                  <th style={{ padding: '15px 10px', fontWeight: '600', textAlign: 'right' }}>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user, index) => (
+                  <motion.tr 
+                    key={user.id}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.05 }}
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}
+                    whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                  >
+                    <td style={{ padding: '15px 10px', color: 'var(--accent)', fontWeight: '800' }}>#{user.id}</td>
+                    <td style={{ padding: '15px 10px', fontWeight: '600' }}>{user.username}</td>
+                    <td style={{ padding: '15px 10px' }}>
+                      <span style={{ 
+                        background: user.role === 'admin' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.1)', 
+                        color: user.role === 'admin' ? '#c084fc' : '#cbd5e1',
+                        padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold'
+                      }}>
+                        {user.role === 'admin' ? 'ПРЕПОДАВАТЕЛЬ' : 'УЧЕНИК'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontWeight: '800', fontSize: '1.1rem' }}>{user.solved_count}</span>
+                        <div style={{ height: '4px', width: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px' }}>
+                          <div style={{ height: '100%', width: `${Math.min((user.solved_count / 10) * 100, 100)}%`, background: 'var(--grad)', borderRadius: '2px' }}></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px 10px', color: 'var(--text-p)', fontSize: '0.9rem' }}>
+                      {user.solved_count >= 10 ? 'Бог математики 🏆' : user.solved_count >= 3 ? 'Алгебраист 📚' : 'Новичок 🐣'}
+                    </td>
+                    <td style={{ padding: '15px 10px', textAlign: 'right' }}>
+                      <button 
+                        onClick={() => handleDeleteUser(user.id)}
+                        style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
+                      >
+                        Удалить
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {users.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-p)' }}>
+                Пользователей пока нет.
               </div>
-            ))}
-            {tasks.length === 0 && <p>Задач пока нет.</p>}
+            )}
           </div>
-        </section>
+        </motion.div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
+        <button 
+          onClick={logout} 
+          className="main-btn" 
+          style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.2)', boxShadow: 'none' }}
+        >
+          Выйти из системы
+        </button>
       </div>
     </div>
   );
