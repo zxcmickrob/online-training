@@ -3,54 +3,67 @@ import { motion, AnimatePresence } from 'framer-motion';
 import katex from 'katex';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Training = () => {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [tasks, setTasks] = useState<any[]>([]); // All tasks fetched (for progression)
+  const [currentTask, setCurrentTask] = useState<any | null>(null); // The task currently displayed
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [aiHint, setAiHint] = useState<string | null>(null);
   const [loadingHint, setLoadingHint] = useState(false);
 
+  const { taskId } = useParams<{ taskId?: string }>(); // Get task ID from URL
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const loadTasks = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/tasks');
-        if (res.data && res.data.length > 0) {
-          setTasks(res.data);
-        } else {
-          loadDemoTasks();
+        // Fetch all tasks for progress calculation and sorting
+        const allRes = await api.get('/tasks');
+        const sortedTasks = allRes.data.sort((a: any, b: any) => a.id - b.id);
+        setTasks(sortedTasks);
+
+        if (taskId) {
+          const res = await api.get(`/tasks/${taskId}`);
+          setCurrentTask(res.data);
+        } else if (sortedTasks.length > 0) {
+          setCurrentTask(sortedTasks[0]);
+          navigate(`/training/${sortedTasks[0].id}`, { replace: true });
         }
       } catch (err) {
-        loadDemoTasks();
+        console.error("Backend error, trying demo mode", err);
+        const saved = localStorage.getItem('demo_tasks');
+        if (saved) {
+          const demoTasks = JSON.parse(saved);
+          setTasks(demoTasks);
+          if (taskId) {
+            setCurrentTask(demoTasks.find((t: any) => t.id === parseInt(taskId)));
+          } else {
+            setCurrentTask(demoTasks[0]);
+          }
+        }
       } finally {
         setLoading(false);
       }
     };
-
-    const loadDemoTasks = () => {
-      const saved = localStorage.getItem('demo_tasks');
-      if (saved) {
-        setTasks(JSON.parse(saved));
-      }
-    };
-
-    loadTasks();
-  }, []);
+    loadData();
+  }, [taskId]);
 
   const checkAnswer = async () => {
-    const task = tasks[currentTaskIndex];
+    if (!currentTask) return;
     setAiHint(null); // Reset hint on new check
     
     // Smart parsing: remove spaces, replace comma with dot
     const cleanAnswer = userAnswer.replace(/\s+/g, '').replace(',', '.').toLowerCase();
-    const correctAnswer = String(task.answer).replace(/\s+/g, '').replace(',', '.').toLowerCase();
+    const correctAnswer = String(currentTask.answer).replace(/\s+/g, '').replace(',', '.').toLowerCase();
 
-    // Если у задачи есть настоящий ID, отправляем на бэкенд
-    if (typeof task.id === 'number' && task.id < 1000000) {
+    // If task has a real ID (from DB), send to backend
+    if (typeof currentTask.id === 'number' && currentTask.id < 1000000) {
       try {
-        await api.post(`/tasks/${task.id}/solve`, { answer: cleanAnswer });
+        await api.post(`/tasks/${currentTask.id}/solve`, { answer: cleanAnswer });
         setFeedback('success');
         toast.success('Ответ принят сервером!');
       } catch (e: any) {
@@ -58,7 +71,7 @@ const Training = () => {
         toast.error(e.response?.data?.message || 'Неверный ответ');
       }
     } else {
-      // Иначе демо-проверка
+      // Otherwise demo check
       if (cleanAnswer === correctAnswer) {
         setFeedback('success');
       } else {
@@ -68,15 +81,16 @@ const Training = () => {
   };
 
   const getAiHint = async () => {
-    const task = tasks[currentTaskIndex];
-    if (typeof task.id !== 'number' || task.id > 1000000) {
+    if (!currentTask) return;
+
+    if (typeof currentTask.id !== 'number' || currentTask.id > 1000000) {
         toast.error('AI подсказки работают только для задач из реальной базы данных.');
         return;
     }
 
     setLoadingHint(true);
     try {
-        const response = await api.post(`/tasks/${task.id}/ai-hint`, { answer: userAnswer });
+        const response = await api.post(`/tasks/${currentTask.id}/ai-hint`, { answer: userAnswer });
         setAiHint(response.data.hint);
         toast.success('AI проанализировал твой ответ!');
     } catch (e) {
@@ -90,28 +104,58 @@ const Training = () => {
     localStorage.removeItem('demo_tasks');
     setTasks([]);
     toast.success('Локальные (демо) задачи удалены!');
-    window.location.reload();
+    navigate('/training'); // Redirect after clearing
+  };
+
+  const handleNextTask = () => {
+    const currentIndex = tasks.findIndex(t => t.id === currentTask.id);
+    if (currentIndex !== -1 && currentIndex < tasks.length - 1) {
+      navigate(`/training/${tasks[currentIndex + 1].id}`);
+      // Reset state for new task
+      setUserAnswer('');
+      setFeedback('');
+      setAiHint(null);
+    } else {
+      // If it's the last task, or not found, navigate to general training
+      toast('Поздравляем, ты решил все задачи по этой теме!', { icon: '👏' });
+      navigate('/training'); 
+    }
   };
 
   if (loading) return <div style={{textAlign: 'center', marginTop: '100px'}}><h1>Загрузка...</h1></div>;
 
-  if (tasks.length === 0) return (
+  if (!currentTask) return (
     <div style={{textAlign: 'center', marginTop: '100px'}}>
       <h1 style={{fontSize: '5rem'}}>404 👾</h1>
-      <p style={{fontSize: '1.5rem', color: 'var(--text-p)'}}>Задач не найдено. Наполни базу в админке.</p>
+      <p style={{fontSize: '1.5rem', color: 'var(--text-p)'}}>Задача не найдена или база пуста.</p>
+      <button onClick={() => navigate('/admin-tasks')} className="main-btn" style={{marginTop: '20px'}}>Добавить задачи</button>
+      {tasks.length === 0 && (
+          <button onClick={clearDemoTasks} style={{ marginTop: '20px', background: 'transparent', color: '#f43f5e', border: '1px solid #f43f5e', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', marginLeft: '10px' }}>Очистить локальные демо-задачи</button>
+      )}
     </div>
   );
 
-  const task = tasks[currentTaskIndex];
-  const progress = ((currentTaskIndex + 1) / tasks.length) * 100;
+  const task = currentTask;
+  const currentTaskIndex = tasks.findIndex(t => t.id === task.id);
+  const progress = tasks.length > 0 ? ((currentTaskIndex + 1) / tasks.length) * 100 : 0;
 
-  // Функция для безопасного рендеринга формул
+  // Функция для безопасного рендеринга формул (теперь поддерживает текст вне формул)
   const renderMath = (text: string) => {
+    if (!text) return text;
     try {
-      if (text && (text.includes('\\') || text.includes('_') || text.includes('^'))) {
-        return <span dangerouslySetInnerHTML={{ __html: katex.renderToString(text, { throwOnError: false }) }} />;
-      }
-      return text;
+      const parts = text.split('$');
+      return parts.map((part, index) => {
+        if (index % 2 === 1) { // Это часть внутри знаков $
+          return (
+            <span 
+              key={index} 
+              style={{ color: 'var(--accent)', textShadow: '0 0 10px var(--accent-glow)' }}
+              dangerouslySetInnerHTML={{ __html: katex.renderToString(part, { throwOnError: false }) }} 
+            />
+          );
+        }
+        return <span key={index}>{part}</span>;
+      });
     } catch (e) {
       return text;
     }
@@ -128,13 +172,6 @@ const Training = () => {
           </div>
           <h1 style={{ fontSize: '3rem' }}>{task.title}</h1>
         </motion.div>
-        
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ color: 'var(--text-p)', fontSize: '0.9rem', marginBottom: '5px' }}>Выполнено: {Math.round(progress)}%</div>
-          <div style={{ width: '200px', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-            <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} style={{ height: '100%', background: 'var(--grad)' }} />
-          </div>
-        </div>
       </div>
 
       <div className="bento-grid">
@@ -172,6 +209,18 @@ const Training = () => {
             </AnimatePresence>
             <button className="main-btn" style={{ width: '100%' }} onClick={checkAnswer}>ПОДТВЕРДИТЬ</button>
             
+            {feedback === 'success' && (
+                <motion.button 
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  onClick={handleNextTask}
+                  style={{ 
+                    width: '100%', marginTop: '10px', background: 'white', color: 'black', border: 'none', 
+                    padding: '15px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', transition: '0.3s'
+                  }}
+                >
+                  ПРОДОЛЖИТЬ →
+                </motion.button>
+            )}
             {feedback === 'error' && (
                 <button 
                   onClick={getAiHint}
@@ -188,7 +237,7 @@ const Training = () => {
           </div>
         </motion.div>
 
-        <div className="bento-card" style={{ gridColumn: 'span 5' }}>
+        <div className="bento-card" style={{ gridColumn: 'span 12' }}>
           <h3>Подсказка</h3>
           {aiHint ? (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '15px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '15px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
@@ -204,21 +253,6 @@ const Training = () => {
           {typeof task.id !== 'number' || task.id > 1000000 ? (
              <button onClick={clearDemoTasks} style={{ marginTop: '20px', background: 'transparent', color: '#f43f5e', border: '1px solid #f43f5e', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Очистить локальные багованные задачи</button>
           ) : null}
-        </div>
-
-        <div className="bento-card" style={{ gridColumn: 'span 7', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h3 style={{ margin: 0 }}>Следующее задание</h3>
-          <motion.button 
-            disabled={feedback !== 'success'}
-            onClick={() => { setCurrentTaskIndex(i => i + 1); setFeedback(''); setUserAnswer(''); setAiHint(null); }}
-            style={{ 
-              background: feedback === 'success' ? 'white' : 'rgba(255,255,255,0.02)',
-              color: feedback === 'success' ? 'black' : 'rgba(255,255,255,0.1)',
-              border: 'none', padding: '16px 32px', borderRadius: '100px', fontWeight: '800'
-            }}
-          >
-            ПРОДОЛЖИТЬ
-          </motion.button>
         </div>
       </div>
     </div>

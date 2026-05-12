@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
                       <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem', lineHeight: '1.4' }}>{task.title}</h3>
                       <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
                         <a 
-                          href={`/training`} 
+                          href={`/training/${task.id}`} 
                           style={{ 
                             textDecoration: 'none', 
                             color: stats?.solved_tasks_ids.includes(task.id) ? '#94a3b8' : 'white',

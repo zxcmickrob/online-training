@@ -20,6 +20,8 @@ services:
       - ./backend:/app
     env_file:
       - ./backend/.env
+    environment:
+      - PYTHONIOENCODING=utf-8
     depends_on:
       - db
     

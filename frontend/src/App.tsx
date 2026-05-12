@@ -21,15 +21,15 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
 
 const Navigation = () => {
   const { token, role } = useAuth();
+  if (!token) return null;
   
   return (
     <div className="floating-nav">
-      {token && <Link to="/" className="nav-link">Главная</Link>}
-      {token && role !== 'admin' && <Link to="/training" className="nav-link">Тренажёр</Link>}
+      <Link to="/" className="nav-link">Главная</Link>
+      {role !== 'admin' && <Link to="/training" className="nav-link">Тренажёр</Link>}
       {/* Показываем админку только для преподавателей */}
-      {token && role === 'admin' && <Link to="/admin-tasks" className="nav-link">Задачи</Link>}
-      {token && role === 'admin' && <Link to="/admin" className="nav-link">Статистика</Link>}
-      {!token && <Link to="/login" className="nav-link active">Войти</Link>}
+      {role === 'admin' && <Link to="/admin-tasks" className="nav-link">Задачи</Link>}
+      {role === 'admin' && <Link to="/admin" className="nav-link">Статистика</Link>}
     </div>
   );
 };
@@ -60,6 +60,7 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/training" element={<Training />} />
+            <Route path="/training/:taskId" element={<Training />} />
             <Route path="/admin-tasks" element={<AdminTasks />} />
             <Route path="/admin" element={
               <ProtectedRoute adminOnly>

@@ -24,13 +24,36 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '450px', margin: '100px auto' }}>
+    <div style={{ maxWidth: '480px', margin: '100px auto' }}>
       <motion.div 
         className="bento-card"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <h1 style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '32px' }}>Вход в систему</h1>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h1 style={{ fontSize: '3rem', marginBottom: '16px' }}>Вход</h1>
+            <div style={{ 
+                background: 'var(--grad)', 
+                height: '4px', 
+                width: '60px', 
+                margin: '0 auto 24px',
+                borderRadius: '10px',
+                boxShadow: '0 0 15px var(--accent-glow)'
+            }}></div>
+            <p style={{ 
+                color: 'white', 
+                fontSize: '1.1rem', 
+                fontWeight: '800', 
+                lineHeight: '1.4',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                textShadow: '0 0 10px rgba(168, 85, 247, 0.5)'
+            }}>
+                Совершенно новый подход<br/>
+                к подготовке к ЕГЭ
+            </p>
+        </div>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <input 
@@ -49,11 +72,11 @@ const Login: React.FC = () => {
             onChange={e => setPassword(e.target.value)} 
             required 
           />
-          <button type="submit" className="main-btn">Войти</button>
+          <button type="submit" className="main-btn" style={{ fontSize: '1.2rem', padding: '20px' }}>ВОЙТИ В СИСТЕМУ</button>
         </form>
         
-        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-p)' }}>
-          Нет аккаунта? <Link to="/register" style={{ color: 'var(--accent)', fontWeight: '700', textDecoration: 'none' }}>Зарегистрироваться</Link>
+        <p style={{ textAlign: 'center', marginTop: '32px', color: 'var(--text-p)', fontSize: '0.95rem' }}>
+          Впервые здесь? <Link to="/register" style={{ color: 'var(--accent)', fontWeight: '800', textDecoration: 'none' }}>Создать аккаунт</Link>
         </p>
       </motion.div>
     </div>

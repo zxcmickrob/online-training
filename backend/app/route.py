@@ -51,6 +51,11 @@ def setup_routes(app):
         tasks = Task.query.all()
         return jsonify([task.to_dict() for task in tasks]), 200
 
+    @app.route('/tasks/<int:task_id>', methods=['GET'])
+    def get_task(task_id):
+        task = Task.query.get_or_404(task_id)
+        return jsonify(task.to_dict()), 200
+
 
     @app.route('/tasks', methods=['POST'])
     @jwt_required()

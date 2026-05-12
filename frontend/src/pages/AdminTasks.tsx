@@ -77,7 +77,7 @@ const AdminTasks = () => {
         <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
           Панель управления
         </span>
-        <h1>Контент-менеджер</h1>
+        <h1>Редактор заданий</h1>
       </header>
 
       <div className="bento-grid">
