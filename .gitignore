@@ -20,6 +20,7 @@ Thumbs.db
 
 # --- Backend (Python / Flask / Poetry) ---
 backend/__pycache__/
+backend/app/__pycache__/
 backend/*.py[cod]
 backend/*$py.class
 backend/.venv/
