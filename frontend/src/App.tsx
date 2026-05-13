@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Training from './pages/Training';
+import StudentStats from './pages/StudentStats';
 import AdminPanel from './pages/AdminPanel';
 import AdminTasks from './pages/AdminTasks';
 import './App.css';
@@ -27,6 +28,7 @@ const Navigation = () => {
     <div className="floating-nav">
       <Link to="/" className="nav-link">Главная</Link>
       {role !== 'admin' && <Link to="/training" className="nav-link">Тренажёр</Link>}
+      {role !== 'admin' && <Link to="/statistics" className="nav-link">Статистика</Link>}
       {/* Показываем админку только для преподавателей */}
       {role === 'admin' && <Link to="/admin-tasks" className="nav-link">Задачи</Link>}
       {role === 'admin' && <Link to="/admin" className="nav-link">Статистика</Link>}
@@ -50,7 +52,7 @@ function App() {
             },
           }}
         />
-        <div className="container" style={{ marginTop: '140px' }}>
+        <div className="container">
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -61,6 +63,11 @@ function App() {
             } />
             <Route path="/training" element={<Training />} />
             <Route path="/training/:taskId" element={<Training />} />
+            <Route path="/statistics" element={
+              <ProtectedRoute>
+                <StudentStats />
+              </ProtectedRoute>
+            } />
             <Route path="/admin-tasks" element={<AdminTasks />} />
             <Route path="/admin" element={
               <ProtectedRoute adminOnly>

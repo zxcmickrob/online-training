@@ -10,20 +10,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  backend:
-    build: ./backend
-    restart: always
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./backend:/app
-    env_file:
-      - ./backend/.env
-    environment:
-      - PYTHONIOENCODING=utf-8
-    depends_on:
-      - db
     
 volumes:
   postgres_data:

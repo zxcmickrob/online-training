@@ -22,28 +22,73 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '480px', margin: '80px auto' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      width: '100%',
+      display: 'flex', 
+      flexDirection: 'column', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      padding: '40px 20px',
+      boxSizing: 'border-box'
+    }}>
+      {/* Hero Slogan Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        style={{ textAlign: 'center', marginBottom: '60px' }}
+      >
+        <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.4em', fontSize: '0.8rem', display: 'block', marginBottom: '16px' }}>
+          {role === 'student' ? 'Присоединяйся к нам' : 'Инструменты для профи'}
+        </span>
+        <h1 style={{ 
+          fontSize: 'clamp(2rem, 6vw, 4.5rem)', 
+          lineHeight: '1.2', 
+          marginBottom: '24px',
+          textShadow: '0 0 50px rgba(168, 85, 247, 0.2)',
+          background: 'none',
+          WebkitTextFillColor: 'initial'
+        }}>
+          {role === 'student' ? (
+            <>
+              <span style={{ color: 'white' }}>Математика</span><br/>
+              <span style={{ 
+                background: 'var(--grad)', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent' 
+              }}>без границ</span>
+            </>
+          ) : (
+            <>
+              <span style={{ color: 'white' }}>Фокус</span><br/>
+              <span style={{ 
+                background: 'var(--grad)', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent' 
+              }}>на результате</span>
+            </>
+          )}
+        </h1>
+        <div style={{ 
+            background: 'var(--grad)', 
+            height: '4px', 
+            width: '100px', 
+            margin: '0 auto',
+            borderRadius: '10px',
+            boxShadow: '0 0 20px var(--accent-glow)'
+        }}></div>
+      </motion.div>
+
+      {/* Register Card */}
       <motion.div 
         className="bento-card"
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        style={{ width: '100%', maxWidth: '460px', padding: '40px' }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 style={{ fontSize: '2.8rem', marginBottom: '12px' }}>Аккаунт</h1>
-            <p style={{ 
-                color: 'white', 
-                fontSize: '1.1rem', 
-                fontWeight: '800', 
-                lineHeight: '1.4',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-                textShadow: '0 0 10px rgba(168, 85, 247, 0.5)'
-            }}>
-                Совершенно новый подход<br/>
-                к подготовке к ЕГЭ
-            </p>
-        </div>
+        <h2 style={{ textAlign: 'center', marginBottom: '32px', fontSize: '2.2rem' }}>Аккаунт</h2>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Переключатель ролей */}
@@ -86,10 +131,10 @@ const Register: React.FC = () => {
             onChange={e => setPassword(e.target.value)} 
             required 
           />
-          <button type="submit" className="main-btn" style={{ fontSize: '1.1rem', padding: '18px' }}>СОЗДАТЬ АККАУНТ</button>
+          <button type="submit" className="main-btn" style={{ fontSize: '1.1rem', padding: '18px', marginTop: '10px' }}>СОЗДАТЬ АККАУНТ</button>
         </form>
         
-        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-p)', fontSize: '0.95rem' }}>
+        <p style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-p)', fontSize: '1rem' }}>
           Уже есть аккаунт? <Link to="/login" style={{ color: 'var(--accent)', fontWeight: '800', textDecoration: 'none' }}>Войти</Link>
         </p>
       </motion.div>

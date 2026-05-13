@@ -39,7 +39,7 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
+    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
       <header style={{ marginBottom: '60px' }}>
         <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
           Доступ: Преподаватель
@@ -118,16 +118,6 @@ const AdminPanel: React.FC = () => {
             )}
           </div>
         </motion.div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
-        <button 
-          onClick={logout} 
-          className="main-btn" 
-          style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.2)', boxShadow: 'none' }}
-        >
-          Выйти из системы
-        </button>
       </div>
     </div>
   );

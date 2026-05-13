@@ -50,7 +50,7 @@ const Training = () => {
       }
     };
     loadData();
-  }, [taskId]);
+  }, [taskId, navigate]);
 
   const checkAnswer = async () => {
     if (!currentTask) return;
@@ -162,13 +162,14 @@ const Training = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
+    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
             <span style={{ background: 'var(--grad)', color: 'white', padding: '2px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '800' }}>
-              ЕГЭ ПРОФИЛЬ
+              МАТЕМАТИКА (ПРОФИЛЬНЫЙ УРОВЕНЬ)
             </span>
+
           </div>
           <h1 style={{ fontSize: '3rem' }}>{task.title}</h1>
         </motion.div>

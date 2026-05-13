@@ -60,9 +60,7 @@ const Dashboard: React.FC = () => {
     return acc;
   }, {} as Record<string, Task[]>);
 
-  const totalTasks = tasks.length;
   const solvedCount = stats?.solved_count || 0;
-  const progressPercent = totalTasks > 0 ? Math.round((solvedCount / totalTasks) * 100) : 0;
 
   // Система рангов
   const getRank = (count: number) => {
@@ -74,7 +72,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
+    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
       {/* Приветствие */}
       <div style={{ marginBottom: '64px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -82,29 +80,17 @@ const Dashboard: React.FC = () => {
             Личный кабинет
           </span>
           <h1 style={{ marginTop: '10px' }}>Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}!</h1>
-          {role !== 'admin' && <div className="rank-badge">{getRank(solvedCount)}</div>}
+          {role !== 'admin' && (
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '15px' }}>
+                <div className="rank-badge" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>{getRank(solvedCount)}</div>
+              </div>
+          )}
         </motion.div>
       </div>
 
       <div className="bento-grid">
-        {/* Карточка статистики */}
-        {role !== 'admin' && (
-          <motion.div className="bento-card" style={{ gridColumn: 'span 4' }} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-            <h3 style={{ margin: 0 }}>Общий прогресс</h3>
-            <div style={{ fontSize: '4rem', fontWeight: '800', color: 'var(--accent)', margin: '20px 0' }}>
-              {progressPercent}%
-            </div>
-            <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: 'var(--grad)' }} />
-            </div>
-            <p style={{ color: 'var(--text-p)', marginTop: '15px', fontSize: '0.9rem' }}>
-              Решено задач: {solvedCount} из {totalTasks}
-            </p>
-          </motion.div>
-        )}
-
         {/* Поиск и фильтры */}
-        <motion.div className="bento-card" style={{ gridColumn: role === 'admin' ? 'span 12' : 'span 8' }} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
+        <motion.div className="bento-card" style={{ gridColumn: 'span 12' }} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
           <h3 style={{ margin: '0 0 20px 0' }}>База знаний</h3>
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <input 
@@ -162,8 +148,7 @@ const Dashboard: React.FC = () => {
                       }}
                       whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(168, 85, 247, 0.15)' }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                        <span style={{ color: 'var(--accent)', fontWeight: '800' }}>#{task.number}</span>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
                         {stats?.solved_tasks_ids.includes(task.id) && (
                           <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '800' }}>
                             ВЫПОЛНЕНО
@@ -207,7 +192,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Кнопка выхода */}
+      {/* Кнопка выхода - ТОЛЬКО ЗДЕСЬ */}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
         <button 
           onClick={logout} 

@@ -72,7 +72,7 @@ const AdminTasks = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
+    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
       <header style={{ marginBottom: '60px' }}>
         <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
           Панель управления
@@ -105,7 +105,8 @@ const AdminTasks = () => {
                 </div>
               )}
             </div>
-            <input className="main-input" placeholder="Эталонный ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
+            <input className="main-input" placeholder="Ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
+
             <button type="submit" className="main-btn">ОПУБЛИКОВАТЬ</button>
           </form>
         </motion.div>
@@ -121,8 +122,7 @@ const AdminTasks = () => {
                 alignItems: 'center', border: '1px solid var(--card-border)'
               }}>
                 <div style={{ flex: 1 }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: '800', marginRight: '10px' }}>#{t.number}</span>
-                  <span style={{ fontSize: '0.95rem' }}>{t.title}</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{t.title}</span>
                   <div style={{ color: 'var(--text-p)', fontSize: '0.8rem', marginTop: '5px' }}>Ответ: {t.answer}</div>
                 </div>
                 <button 
@@ -143,16 +143,6 @@ const AdminTasks = () => {
             ))}
           </div>
         </motion.div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
-        <button 
-          onClick={logout} 
-          className="main-btn" 
-          style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.2)', boxShadow: 'none' }}
-        >
-          Выйти из системы
-        </button>
       </div>
     </div>
   );
