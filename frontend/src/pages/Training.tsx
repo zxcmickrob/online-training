@@ -6,24 +6,49 @@ import toast from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const Training = () => {
-  const [tasks, setTasks] = useState<any[]>([]); // All tasks fetched (for progression)
-  const [currentTask, setCurrentTask] = useState<any | null>(null); // The task currently displayed
+  const [tasks, setTasks] = useState<any[]>([]); 
+  const [currentTask, setCurrentTask] = useState<any | null>(null); 
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [aiHint, setAiHint] = useState<string | null>(null);
   const [loadingHint, setLoadingHint] = useState(false);
 
-  const { taskId } = useParams<{ taskId?: string }>(); // Get task ID from URL
+  const { taskId } = useParams<{ taskId?: string }>(); 
   const navigate = useNavigate();
+
+  const TOPIC_ORDER = [
+    "Планиметрия",
+    "Стереометрия",
+    "Теория вероятностей",
+    "Логарифмические уравнения",
+    "Вычисления и преобразования",
+    "Производная",
+    "Текстовые задачи",
+    "Графики функций"
+  ];
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Fetch all tasks for progress calculation and sorting
         const allRes = await api.get('/tasks');
-        const sortedTasks = allRes.data.sort((a: any, b: any) => a.id - b.id);
+        
+        // Сортируем задачи по темам и номерам для логичного переключения
+        const sortedTasks = allRes.data.sort((a: any, b: any) => {
+          const indexA = TOPIC_ORDER.indexOf(a.title);
+          const indexB = TOPIC_ORDER.indexOf(b.title);
+          
+          if (indexA !== indexB) {
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return a.title.localeCompare(b.title);
+          }
+          
+          return (parseInt(a.number) || 0) - (parseInt(b.number) || 0);
+        });
+
         setTasks(sortedTasks);
 
         if (taskId) {
@@ -54,24 +79,21 @@ const Training = () => {
 
   const checkAnswer = async () => {
     if (!currentTask) return;
-    setAiHint(null); // Reset hint on new check
+    setAiHint(null);
     
-    // Smart parsing: remove spaces, replace comma with dot
     const cleanAnswer = userAnswer.replace(/\s+/g, '').replace(',', '.').toLowerCase();
     const correctAnswer = String(currentTask.answer).replace(/\s+/g, '').replace(',', '.').toLowerCase();
 
-    // If task has a real ID (from DB), send to backend
     if (typeof currentTask.id === 'number' && currentTask.id < 1000000) {
       try {
         await api.post(`/tasks/${currentTask.id}/solve`, { answer: cleanAnswer });
         setFeedback('success');
-        toast.success('Ответ принят сервером!');
+        toast.success('Ответ принят!');
       } catch (e: any) {
         setFeedback('error');
         toast.error(e.response?.data?.message || 'Неверный ответ');
       }
     } else {
-      // Otherwise demo check
       if (cleanAnswer === correctAnswer) {
         setFeedback('success');
       } else {
@@ -82,12 +104,6 @@ const Training = () => {
 
   const getAiHint = async () => {
     if (!currentTask) return;
-
-    if (typeof currentTask.id !== 'number' || currentTask.id > 1000000) {
-        toast.error('AI подсказки работают только для задач из реальной базы данных.');
-        return;
-    }
-
     setLoadingHint(true);
     try {
         const response = await api.post(`/tasks/${currentTask.id}/ai-hint`, { answer: userAnswer });
@@ -100,56 +116,43 @@ const Training = () => {
     }
   };
 
-  const clearDemoTasks = () => {
-    localStorage.removeItem('demo_tasks');
-    setTasks([]);
-    toast.success('Локальные (демо) задачи удалены!');
-    navigate('/training'); // Redirect after clearing
-  };
-
   const handleNextTask = () => {
     const currentIndex = tasks.findIndex(t => t.id === currentTask.id);
     if (currentIndex !== -1 && currentIndex < tasks.length - 1) {
       navigate(`/training/${tasks[currentIndex + 1].id}`);
-      // Reset state for new task
       setUserAnswer('');
       setFeedback('');
       setAiHint(null);
     } else {
-      // If it's the last task, or not found, navigate to general training
-      toast('Поздравляем, ты решил все задачи по этой теме!', { icon: '👏' });
-      navigate('/training'); 
+      toast('Поздравляем, ты решил все задачи!', { icon: '👏' });
+      navigate('/dashboard'); 
     }
   };
 
-  if (loading) return <div style={{textAlign: 'center', marginTop: '100px'}}><h1>Загрузка...</h1></div>;
-
-  if (!currentTask) return (
-    <div style={{textAlign: 'center', marginTop: '100px'}}>
-      <h1 style={{fontSize: '5rem'}}>404 👾</h1>
-      <p style={{fontSize: '1.5rem', color: 'var(--text-p)'}}>Задача не найдена или база пуста.</p>
-      <button onClick={() => navigate('/admin-tasks')} className="main-btn" style={{marginTop: '20px'}}>Добавить задачи</button>
-      {tasks.length === 0 && (
-          <button onClick={clearDemoTasks} style={{ marginTop: '20px', background: 'transparent', color: '#f43f5e', border: '1px solid #f43f5e', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', marginLeft: '10px' }}>Очистить локальные демо-задачи</button>
-      )}
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} style={{ width: 50, height: 50, border: '5px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%' }} />
     </div>
   );
 
-  const task = currentTask;
-  const currentTaskIndex = tasks.findIndex(t => t.id === task.id);
-  const progress = tasks.length > 0 ? ((currentTaskIndex + 1) / tasks.length) * 100 : 0;
+  if (!currentTask) return (
+    <div style={{textAlign: 'center', marginTop: '140px'}}>
+      <h1 style={{fontSize: '5rem', marginBottom: '20px'}}>👾</h1>
+      <p style={{fontSize: '1.5rem', color: 'var(--text-p)'}}>Задач пока нет. Загляни позже!</p>
+      <button onClick={() => navigate('/dashboard')} className="main-btn" style={{marginTop: '30px'}}>НА ГЛАВНУЮ</button>
+    </div>
+  );
 
-  // Функция для безопасного рендеринга формул (теперь поддерживает текст вне формул)
   const renderMath = (text: string) => {
     if (!text) return text;
     try {
       const parts = text.split('$');
       return parts.map((part, index) => {
-        if (index % 2 === 1) { // Это часть внутри знаков $
+        if (index % 2 === 1) {
           return (
             <span 
               key={index} 
-              style={{ color: 'var(--accent)', textShadow: '0 0 10px var(--accent-glow)' }}
+              style={{ color: 'var(--accent)', textShadow: '0 0 15px var(--accent-glow)' }}
               dangerouslySetInnerHTML={{ __html: katex.renderToString(part, { throwOnError: false }) }} 
             />
           );
@@ -162,16 +165,15 @@ const Training = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
+    <div style={{ paddingBottom: '100px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
             <span style={{ background: 'var(--grad)', color: 'white', padding: '2px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '800' }}>
               МАТЕМАТИКА (ПРОФИЛЬНЫЙ УРОВЕНЬ)
             </span>
-
           </div>
-          <h1 style={{ fontSize: '3rem' }}>{task.title}</h1>
+          <h1 style={{ fontSize: '3rem' }}>{currentTask.title}</h1>
         </motion.div>
       </div>
 
@@ -182,14 +184,14 @@ const Training = () => {
             fontSize: '2.5rem', fontWeight: '800', textAlign: 'center', color: 'white',
             textShadow: '0 0 40px rgba(168, 85, 247, 0.3)'
           }}>
-            {renderMath(task.question)}
+            {renderMath(currentTask.question)}
           </div>
         </motion.div>
 
         <motion.div className="bento-card" style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <h3 style={{ margin: '0 0 10px 0' }}>Твой ответ</h3>
-            <input className="main-input" placeholder="0.00" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} />
+            <input className="main-input" placeholder="0.00" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} onKeyPress={e => e.key === 'Enter' && checkAnswer()} />
           </div>
 
           <div style={{ marginTop: '20px' }}>
@@ -251,9 +253,6 @@ const Training = () => {
               Используйте стандартные методы решения математических задач. Если вы ошибетесь, здесь появится кнопка вызова ИИ-помощника.
             </p>
           )}
-          {typeof task.id !== 'number' || task.id > 1000000 ? (
-             <button onClick={clearDemoTasks} style={{ marginTop: '20px', background: 'transparent', color: '#f43f5e', border: '1px solid #f43f5e', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Очистить локальные багованные задачи</button>
-          ) : null}
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@ const StudentStats: React.FC = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
+    <div style={{ paddingBottom: '100px' }}>
       <header style={{ marginBottom: '60px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
@@ -195,7 +195,7 @@ const StudentStats: React.FC = () => {
                   border: '1px solid rgba(16, 185, 129, 0.2)'
                 }}
               >
-                {task.title}
+                #{task.number} {task.title}
               </div>
             ))}
             {solvedCount === 0 && (

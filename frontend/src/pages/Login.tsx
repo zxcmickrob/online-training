@@ -74,6 +74,8 @@ const Login: React.FC = () => {
         className="bento-card"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
+        whileHover={{}} 
+        whileTap={{}}
         transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
         style={{ width: '100%', maxWidth: '460px', padding: '40px' }}
       >

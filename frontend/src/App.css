@@ -82,56 +82,250 @@ body::before {
   display: inline-block;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 40px;
+/* Контейнер приложения с сайдбаром */
+:root {
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
 }
 
-/* Навигация "Neon Island" */
-.floating-nav {
+.app-layout {
+  min-height: 100vh;
+  position: relative;
+}
+
+.sidebar {
   position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(22, 27, 34, 0.6);
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: rgba(11, 14, 20, 0.95);
   backdrop-filter: blur(20px);
-  padding: 8px 12px;
-  border-radius: 100px;
+  border-right: 1px solid var(--card-border);
   display: flex;
-  gap: 4px;
-  border: 1px solid var(--card-border);
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  flex-direction: column;
+  padding: 40px 15px;
   z-index: 1000;
+  box-sizing: border-box;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-link {
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+  padding: 40px 10px;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 45px;
+  right: 12px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid var(--card-border);
+  color: var(--accent);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 1001;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-toggle:focus {
+  outline: none;
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.9);
+  background: rgba(168, 85, 247, 0.2);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  right: 50%;
+  transform: translateX(50%);
+}
+
+.sidebar.collapsed .sidebar-toggle:active {
+  transform: translateX(50%) scale(0.9);
+}
+
+.sidebar-logo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.8rem;
+  margin-bottom: 60px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0 10px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+/* Глобальный запрет на стандартные браузерные рамки и подсветки */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent !important;
+  outline: none !important;
+}
+
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Специфичный фикс для ссылок и кнопок навигации */
+.sidebar-link, .bento-card, .main-btn, .sidebar-toggle {
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Удаляем любое мигание при переходе состояний */
+.sidebar-link:focus, .sidebar-link:active,
+.bento-card:focus, .bento-card:active {
+  background: rgba(168, 85, 247, 0.1); /* Сразу ставим наш цвет, без белого промежутка */
+}
+
+.sidebar-link {
   text-decoration: none;
   color: var(--text-p);
-  padding: 10px 24px;
-  border-radius: 100px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
 }
 
-.nav-link:hover {
+.sidebar-link svg {
+  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.sidebar.collapsed .sidebar-link {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+}
+
+.sidebar-link span {
+  transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-link span {
+  opacity: 0;
+  width: 0;
+  margin: 0;
+  pointer-events: none;
+  transform: translateX(-10px);
+}
+
+.sidebar-link:hover {
   color: white;
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.sidebar-link.active {
   background: rgba(168, 85, 247, 0.1);
+  color: var(--accent);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px 16px 16px 4px;
 }
 
-.nav-link.active {
-  background: var(--grad);
-  color: white;
-  box-shadow: 0 0 20px var(--accent-glow);
+.sidebar-footer {
+  margin-top: auto;
+  padding: 10px;
 }
 
-/* Bento Cards с неоновой обводкой */
+.sidebar.collapsed .logout-text {
+  display: none;
+}
+.container {
+  width: 100%;
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Стили контейнера только когда есть сайдбар (внутри приложения) */
+.sidebar ~ .container {
+  padding: 80px 60px;
+  max-width: 1400px;
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+}
+
+.sidebar.collapsed ~ .container {
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+
+/* Мобильное меню */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .container {
+    margin-left: 0 !important;
+    padding: 100px 20px 40px;
+  }
+  .mobile-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 70px;
+    background: rgba(11, 14, 20, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 900;
+    border-bottom: 1px solid var(--card-border);
+  }
+}
+@media (min-width: 1025px) {
+  .mobile-header { display: none; }
+}
+
+/* Удаляем старую навигацию */
+.floating-nav { display: none; }
+
+/* Bento Cards - корректировка отступа */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 24px;
-  margin-top: 140px;
+  gap: 32px;
+  margin-top: 40px;
 }
 
 .bento-card {
@@ -140,23 +334,17 @@ body::before {
   padding: 32px;
   border: 1px solid var(--card-border);
   backdrop-filter: blur(10px);
-  transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
+  transition: none !important;
+  user-select: none;
 }
 
-.bento-card::after {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, transparent 100%);
-  pointer-events: none;
-}
-
-.bento-card:hover {
-  transform: translateY(-8px) scale(1.01);
-  border-color: var(--accent);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(168, 85, 247, 0.1);
+.bento-card:hover, .bento-card:active, .bento-card:focus {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--card-border) !important;
+  background: rgba(22, 27, 34, 0.8) !important;
 }
 
 h1, h2, h3 {
@@ -218,15 +406,15 @@ h3 {
   font-family: 'Manrope', sans-serif;
   font-weight: 600;
   color: white;
-  transition: all 0.3s;
+  transition: border-color 0.2s ease;
   width: 100%;
   box-sizing: border-box;
 }
 
 .main-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
   outline: none;
+  box-shadow: none;
 }
 
 /* RESPONSIVE DESIGN (Mobile Adaptability) */
@@ -263,3 +451,4 @@ h3 {
     border-radius: 20px;
   }
 }
+

@@ -28,6 +28,7 @@ def generate_math_tasks(count=50):
          "solver": lambda a,b: (a-b)/2, "number": 9, "type": "river_boat"},
     ]
 
+    topic_counts = {topic["name"]: 0 for topic in topics}
     generated_questions = set()
 
     while len(tasks) < count:
@@ -71,9 +72,10 @@ def generate_math_tasks(count=50):
         if question_text in generated_questions:
             continue
             
+        topic_counts[topic_info["name"]] += 1
         tasks.append({
-            "number": topic_info["number"],
-            "title": topic_info["name"] + f" (Вариант {len(tasks) + 1})",
+            "number": topic_counts[topic_info["name"]],
+            "title": topic_info["name"],
             "question": question_text,
             "answer": str(answer_val)
         })

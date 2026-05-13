@@ -33,13 +33,13 @@ const AdminTasks = () => {
       await axios.post(`${API_URL}/tasks`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Данные синхронизированы с сервером');
+      toast.success('Задача опубликована на сервере');
       fetchTasks();
     } catch {
       const updated = [...tasks, { ...formData, id: Date.now() }];
       setTasks(updated);
       localStorage.setItem('demo_tasks', JSON.stringify(updated));
-      toast.success('Сохранено в локальное хранилище');
+      toast.success('Сохранено локально');
     }
     setFormData({ number: '', title: '', question: '', answer: '' });
   };
@@ -72,7 +72,7 @@ const AdminTasks = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px', paddingTop: '140px' }}>
+    <div style={{ paddingBottom: '100px' }}>
       <header style={{ marginBottom: '60px' }}>
         <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
           Панель управления
@@ -85,57 +85,55 @@ const AdminTasks = () => {
         <motion.div className="bento-card" style={{ gridColumn: 'span 5' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Новое задание</h3>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '15px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.5fr', gap: '15px' }}>
               <input className="main-input" placeholder="№" value={formData.number} onChange={e => setFormData({...formData, number: e.target.value})} required />
-              <input className="main-input" placeholder="Тема (напр. Геометрия)" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+              <input className="main-input" placeholder="Тема задания" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
             </div>
             <div>
               <textarea 
                 className="main-input" 
-                style={{ minHeight: '120px', resize: 'none', marginBottom: '10px' }}
+                style={{ minHeight: '160px', resize: 'none', marginBottom: '10px' }}
                 placeholder="Текст задачи (можно использовать LaTeX: \log_2 x)"
                 value={formData.question}
                 onChange={e => setFormData({...formData, question: e.target.value})}
                 required
               />
               {formData.question && (
-                <div style={{ padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '15px', fontSize: '1.2rem', textAlign: 'center' }}>
-                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-p)', marginBottom: '5px' }}>Предпросмотр:</span>
-                  {renderMath(formData.question)}
+                <div style={{ padding: '20px', background: 'rgba(168, 85, 247, 0.05)', borderRadius: '20px', fontSize: '1.2rem', textAlign: 'center', border: '1px dashed var(--card-border)' }}>
+                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-p)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Предпросмотр:</span>
+                  <div style={{ color: 'white' }}>{renderMath(formData.question)}</div>
                 </div>
               )}
             </div>
-            <input className="main-input" placeholder="Ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
+            <input className="main-input" placeholder="Правильный ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
 
-            <button type="submit" className="main-btn">ОПУБЛИКОВАТЬ</button>
+            <button type="submit" className="main-btn" style={{ marginTop: '10px' }}>ОПУБЛИКОВАТЬ ЗАДАНИЕ</button>
           </form>
         </motion.div>
 
         {/* Список задач */}
         <motion.div className="bento-card" style={{ gridColumn: 'span 7' }} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
           <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Активные задачи ({tasks.length})</h3>
-          <div style={{ display: 'grid', gap: '12px', maxHeight: '550px', overflowY: 'auto', paddingRight: '10px' }}>
+          <div style={{ display: 'grid', gap: '12px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
             {tasks.map((t: any) => (
               <div key={t.id} style={{ 
-                background: 'rgba(255,255,255,0.03)', padding: '15px 20px', 
-                borderRadius: '16px', display: 'flex', justifyContent: 'space-between',
-                alignItems: 'center', border: '1px solid var(--card-border)'
+                background: 'rgba(255,255,255,0.02)', padding: '20px 24px', 
+                borderRadius: '24px', display: 'flex', justifyContent: 'space-between',
+                alignItems: 'center', border: '1px solid var(--card-border)',
+                transition: 'all 0.3s ease'
               }}>
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{t.title}</span>
-                  <div style={{ color: 'var(--text-p)', fontSize: '0.8rem', marginTop: '5px' }}>Ответ: {t.answer}</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--accent)', marginRight: '10px' }}>#{t.number}</span>
+                    {t.title}
+                  </div>
+                  <div style={{ color: 'var(--text-p)', fontSize: '0.85rem' }}>Правильный ответ: <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{t.answer}</span></div>
                 </div>
                 <button 
                   onClick={() => {
-                    toast((t_toast) => (
-                      <span>
-                        Точно удалить эту задачу?
-                        <button onClick={() => { toast.dismiss(t_toast.id); handleDeleteTask(t.id); }} style={{ margin: '0 10px', padding: '4px 8px', background: '#f43f5e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Да</button>
-                        <button onClick={() => toast.dismiss(t_toast.id)} style={{ padding: '4px 8px', background: '#475569', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Нет</button>
-                      </span>
-                    ));
+                    if (window.confirm('Точно удалить эту задачу?')) handleDeleteTask(t.id);
                   }}
-                  style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '15px' }}
+                  style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '800', fontSize: '0.75rem', marginLeft: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
                   Удалить
                 </button>

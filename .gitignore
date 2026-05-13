@@ -45,3 +45,4 @@ frontend/.pnpm-debug.log*
 
 # --- Infrastructure ---
 .docker-temp/
+.vercel

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 interface UserStat {
   id: number;
@@ -31,10 +32,10 @@ const AdminPanel: React.FC = () => {
     if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
     try {
       await api.delete(`/users/${id}`);
-      alert('Пользователь удален');
+      toast.success('Пользователь удален');
       fetchUsers();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Ошибка при удалении');
+      toast.error(err.response?.data?.message || 'Ошибка при удалении');
     }
   };
 
