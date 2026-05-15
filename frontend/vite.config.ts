@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    hmr: {
+      clientPort: 443 // Важно для работы через HTTPS туннели
+    }
   }
 })

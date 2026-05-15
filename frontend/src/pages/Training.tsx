@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import katex from 'katex';
 import api from '../api/axios';
@@ -176,86 +176,87 @@ const Training = () => {
           <h1 style={{ fontSize: '3rem' }}>{currentTask.title}</h1>
         </motion.div>
       </div>
-
-      <div className="bento-grid">
-        <motion.div className="bento-card" style={{ gridColumn: 'span 8', minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ color: 'var(--text-p)', marginBottom: '30px', fontSize: '0.9rem', letterSpacing: '2px' }}>УСЛОВИЕ ЗАДАЧИ</div>
-          <div style={{ 
-            fontSize: '2.5rem', fontWeight: '800', textAlign: 'center', color: 'white',
-            textShadow: '0 0 40px rgba(168, 85, 247, 0.3)'
-          }}>
-            {renderMath(currentTask.question)}
-          </div>
-        </motion.div>
-
-        <motion.div className="bento-card" style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ margin: '0 0 10px 0' }}>Твой ответ</h3>
-            <input className="main-input" placeholder="0.00" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} onKeyPress={e => e.key === 'Enter' && checkAnswer()} />
-          </div>
-
-          <div style={{ marginTop: '20px' }}>
-            <AnimatePresence mode="wait">
-              {feedback && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                  style={{ 
-                    padding: '20px', borderRadius: '20px', textAlign: 'center', fontWeight: '800',
-                    background: feedback === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                    color: feedback === 'success' ? '#10b981' : '#f43f5e',
-                    border: '1px solid', marginBottom: '15px'
-                  }}
-                >
-                  {feedback === 'success' ? '✓ ВЕРНО' : '× ОШИБКА'}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button className="main-btn" style={{ width: '100%' }} onClick={checkAnswer}>ПОДТВЕРДИТЬ</button>
-            
-            {feedback === 'success' && (
-                <motion.button 
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  onClick={handleNextTask}
-                  style={{ 
-                    width: '100%', marginTop: '10px', background: 'white', color: 'black', border: 'none', 
-                    padding: '15px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', transition: '0.3s'
-                  }}
-                >
-                  ПРОДОЛЖИТЬ →
-                </motion.button>
-            )}
-            {feedback === 'error' && (
-                <button 
-                  onClick={getAiHint}
-                  disabled={loadingHint}
-                  style={{ 
-                      width: '100%', marginTop: '10px', padding: '15px', borderRadius: '20px', 
-                      background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.3)',
-                      fontWeight: '700', cursor: loadingHint ? 'wait' : 'pointer', transition: '0.3s'
-                  }}
-                >
-                  {loadingHint ? 'ИИ АНАЛИЗИРУЕТ...' : '✨ ПОПРОСИТЬ ИИ НАЙТИ ОШИБКУ'}
-                </button>
-            )}
-          </div>
-        </motion.div>
-
-        <div className="bento-card" style={{ gridColumn: 'span 12' }}>
-          <h3>Подсказка</h3>
-          {aiHint ? (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '15px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '15px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-                <p style={{ color: '#e2e8f0', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
-                    <strong>✨ ИИ Репетитор:</strong> {aiHint}
-                </p>
-            </motion.div>
-          ) : (
-            <p style={{ color: 'var(--text-p)', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Используйте стандартные методы решения математических задач. Если вы ошибетесь, здесь появится кнопка вызова ИИ-помощника.
-            </p>
-          )}
-        </div>
+  <div className="bento-grid">
+    <motion.div className="bento-card span-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ color: 'var(--text-p)', marginBottom: '30px', fontSize: '0.9rem', letterSpacing: '2px' }}>УСЛОВИЕ ЗАДАЧИ</div>
+      <div className="training-question" style={{ 
+        fontSize: '2.5rem', fontWeight: '800', textAlign: 'center', color: 'white',
+        textShadow: '0 0 40px rgba(168, 85, 247, 0.3)'
+      }}>
+        {renderMath(currentTask.question)}
       </div>
-    </div>
+    </motion.div>
+
+    <motion.div className="bento-card span-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div>
+        <h3 style={{ margin: '0 0 10px 0' }}>Твой ответ</h3>
+        <input className="main-input" placeholder="0.00" value={userAnswer} onChange={e => setUserAnswer(e.target.value)} onKeyPress={e => e.key === 'Enter' && checkAnswer()} />
+      </div>
+      
+      <div style={{ marginTop: '20px' }}>
+        <AnimatePresence mode="wait">
+          {feedback && (
+            <motion.div 
+              key={feedback}
+              initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -10 }}
+              style={{ 
+                padding: '20px', borderRadius: '20px', textAlign: 'center', fontWeight: '800',
+                background: feedback === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                color: feedback === 'success' ? '#10b981' : '#f43f5e',
+                border: '1px solid', marginBottom: '15px'
+              }}
+            >
+              {feedback === 'success' ? '✓ ВЕРНО' : '× ОШИБКА'}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <button className="main-btn" style={{ width: '100%' }} onClick={checkAnswer}>ПОДТВЕРДИТЬ</button>
+        
+        {feedback === 'success' && (
+            <motion.button 
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              onClick={handleNextTask}
+              style={{ 
+                width: '100%', marginTop: '10px', background: 'white', color: 'black', border: 'none', 
+                padding: '15px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', transition: '0.3s'
+              }}
+            >
+              ПРОДОЛЖИТЬ →
+            </motion.button>
+        )}
+        
+        {feedback === 'error' && (
+            <button 
+              onClick={getAiHint}
+              disabled={loadingHint}
+              style={{ 
+                  width: '100%', marginTop: '10px', padding: '15px', borderRadius: '20px', 
+                  background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.3)',
+                  fontWeight: '700', cursor: loadingHint ? 'wait' : 'pointer', transition: '0.3s'
+              }}
+            >
+              {loadingHint ? 'ИИ АНАЛИЗИРУЕТ...' : '✨ ПОПРОСИТЬ ИИ НАЙТИ ОШИБКУ'}
+            </button>
+        )}
+      </div>
+    </motion.div>
+
+    <motion.div className="bento-card span-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      <h3>Подсказка</h3>
+      {aiHint ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '15px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '15px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+            <p style={{ color: '#e2e8f0', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
+                <strong>✨ ИИ Репетитор:</strong> {renderMath(aiHint)}
+            </p>        </motion.div>
+      ) : (
+        <p style={{ color: 'var(--text-p)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+          Используйте стандартные методы решения математических задач. Если вы ошибетесь, здесь появится кнопка вызова ИИ-помощника.
+        </p>
+      )}
+    </motion.div>
+  </div>
+</div>
   );
 };
 

@@ -24,6 +24,7 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'solved' | 'unsolved'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const { role } = useAuth();
 
@@ -130,17 +131,52 @@ const Dashboard: React.FC = () => {
     return 'ЛЕГЕНДА';
   };
 
+  const getRankClass = (count: number) => {
+    if (count === 0) return 'novice';
+    if (count < 5) return 'pupil';
+    if (count < 15) return 'pro';
+    if (count < 30) return 'master';
+    return 'legend';
+  };
+
+  const getCategoryStats = (categoryTasks: Task[]) => {
+    const total = categoryTasks.length;
+    const solved = categoryTasks.filter(t => stats?.solved_tasks_ids.includes(t.id)).length;
+    return { total, solved, percent: total > 0 ? Math.round((solved / total) * 100) : 0 };
+  };
+
   return (
     <div style={{ paddingBottom: '100px' }}>
       <div style={{ marginBottom: '64px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
-            Личный кабинет
-          </span>
-          <h1 style={{ marginTop: '10px' }}>Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}!</h1>
-          {role !== 'admin' && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
+                Личный кабинет
+              </span>
+              <h1 style={{ marginTop: '10px' }}>Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}!</h1>
+            </div>
+            {selectedCategory && (
+              <button 
+                onClick={() => setSelectedCategory(null)}
+                style={{ 
+                  background: 'rgba(255,255,255,0.05)', 
+                  border: '1px solid var(--card-border)', 
+                  padding: '12px 24px',
+                  borderRadius: '16px',
+                  fontWeight: '800',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: '0.3s'
+                }}
+              >
+                ← К КАТЕГОРИЯМ
+              </button>
+            )}
+          </div>
+          {role !== 'admin' && !selectedCategory && (
               <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '15px' }}>
-                <div className="rank-badge" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>{getRank(solvedCount)}</div>
+                <div className={`rank-badge ${getRankClass(solvedCount)}`} style={{ padding: '8px 20px', fontSize: '0.9rem' }}>{getRank(solvedCount)}</div>
                 <div style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '600' }}>Решено задач: {solvedCount}</div>
               </div>
           )}
@@ -148,8 +184,8 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="bento-grid">
-        <motion.div className="bento-card" style={{ gridColumn: 'span 12' }} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-          <h3 style={{ margin: '0 0 20px 0' }}>База знаний</h3>
+        <motion.div className="bento-card span-12" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+          <h3 style={{ margin: '0 0 20px 0' }}>{selectedCategory ? `Задания: ${selectedCategory}` : 'База знаний'}</h3>
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <input 
               className="main-input" 
@@ -176,26 +212,55 @@ const Dashboard: React.FC = () => {
           </div>
         </motion.div>
 
-        <div style={{ gridColumn: 'span 12', marginTop: '40px' }}>
-          <AnimatePresence>
-            {sortedCategories.map(([category, catTasks], categoryIndex) => (
+        <div className="span-12" style={{ marginTop: '40px' }}>
+          <AnimatePresence mode="wait">
+            {!selectedCategory ? (
               <motion.div 
-                key={category}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: categoryIndex * 0.1 }}
-                style={{ marginBottom: '50px' }}
+                key="categories"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-                  <h2 style={{ color: 'white', margin: 0, fontSize: '1.8rem', fontWeight: '800' }}>{category}</h2>
-                  <span style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#c084fc', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                    {catTasks.length} задач
-                  </span>
-                  <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(168, 85, 247, 0.5) 0%, transparent 100%)', marginLeft: '10px' }}></div>
-                </div>
-
+                {sortedCategories.map(([category, catTasks]) => {
+                  const { total, solved, percent } = getCategoryStats(catTasks);
+                  return (
+                    <motion.div 
+                      key={category}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      onClick={() => setSelectedCategory(category)}
+                      className="bento-card"
+                      style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                    >
+                      <div style={{ position: 'absolute', top: 0, right: 0, width: '100px', height: '100px', background: 'var(--grad)', opacity: 0.05, borderRadius: '0 0 0 100%', pointerEvents: 'none' }}></div>
+                      <h2 style={{ fontSize: '1.6rem', marginBottom: '15px' }}>{category}</h2>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem', color: 'var(--text-p)' }}>
+                        <span>Прогресс: {percent}%</span>
+                        <span>{solved} / {total}</span>
+                      </div>
+                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          style={{ height: '100%', background: 'var(--grad)', borderRadius: '10px', boxShadow: '0 0 10px var(--accent-glow)' }}
+                        />
+                      </div>
+                      <button className="main-btn" style={{ marginTop: '25px', width: '100%', background: 'rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
+                        ОТКРЫТЬ ЗАДАНИЯ →
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="tasks"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                  {catTasks.map((task) => {
+                  {(categoriesMap[selectedCategory] || []).map((task) => {
                     const isSolved = stats?.solved_tasks_ids.includes(task.id);
                     return (
                       <motion.div 
@@ -214,8 +279,7 @@ const Dashboard: React.FC = () => {
                             padding: '20px 24px',
                             border: isSolved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--card-border)',
                             textDecoration: 'none',
-                            cursor: 'pointer',
-                            boxShadow: 'none'
+                            cursor: 'pointer'
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -233,10 +297,10 @@ const Dashboard: React.FC = () => {
                   })}
                 </div>
               </motion.div>
-            ))}
+            )}
           </AnimatePresence>
 
-          {sortedCategories.length === 0 && (
+          {((!selectedCategory && sortedCategories.length === 0) || (selectedCategory && (!categoriesMap[selectedCategory] || categoriesMap[selectedCategory].length === 0))) && (
             <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-p)' }}>
               <h2>Задач не найдено</h2>
               <p>Попробуй изменить параметры поиска или фильтры</p>
