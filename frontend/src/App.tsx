@@ -35,7 +35,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
           )}
         </button>
         
-        <div className="sidebar-logo">NEO STUDY</div>
+        {!isCollapsed ? (
+          <div className="sidebar-logo">NEO STUDY</div>
+        ) : (
+          <div className="sidebar-logo-small">NS</div>
+        )}
         
         <nav className="sidebar-nav">
           <NavLink to="/" className="sidebar-link" onClick={() => setIsMobileOpen(false)}>
@@ -84,67 +88,77 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }:
   );
 };
 
-function App() {
+const AppLayout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { token } = useAuth();
+  const hasSidebar = !!token;
 
+  return (
+    <div className={`app-layout ${isCollapsed ? 'sidebar-collapsed' : ''} ${!hasSidebar ? 'no-sidebar' : ''}`}>
+      <Sidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed} 
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+      />
+      
+      {hasSidebar && (
+        <div className="mobile-header">
+          <button 
+            onClick={() => setIsMobileOpen(true)}
+            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}
+          >
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div style={{ marginLeft: '15px', fontFamily: 'Outfit', fontWeight: '900', fontSize: '1.2rem', background: 'var(--grad)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></div>
+        </div>
+      )}
+
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            borderRadius: '12px',
+            border: '1px solid rgba(168, 85, 247, 0.2)',
+          },
+        }}
+      />
+      <div className="container">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/training" element={<Training />} />
+          <Route path="/training/:taskId" element={<Training />} />
+          <Route path="/statistics" element={
+            <ProtectedRoute>
+              <StudentStats />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin-tasks" element={<AdminTasks />} />
+          <Route path="/admin" element={
+            <ProtectedRoute adminOnly>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </div>
+    </div>
+  );
+};
+
+function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className={`app-layout ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
-          <Sidebar 
-            isCollapsed={isCollapsed} 
-            setIsCollapsed={setIsCollapsed} 
-            isMobileOpen={isMobileOpen}
-            setIsMobileOpen={setIsMobileOpen}
-          />
-          
-          <div className="mobile-header">
-            <button 
-              onClick={() => setIsMobileOpen(true)}
-              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}
-            >
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-            <div style={{ marginLeft: '15px', fontFamily: 'Outfit', fontWeight: '900', fontSize: '1.2rem', background: 'var(--grad)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>NEO STUDY</div>
-          </div>
-
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: '#1e293b',
-                color: '#fff',
-                borderRadius: '12px',
-                border: '1px solid rgba(168, 85, 247, 0.2)',
-              },
-            }}
-          />
-          <div className="container">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/training" element={<Training />} />
-              <Route path="/training/:taskId" element={<Training />} />
-              <Route path="/statistics" element={
-                <ProtectedRoute>
-                  <StudentStats />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin-tasks" element={<AdminTasks />} />
-              <Route path="/admin" element={
-                <ProtectedRoute adminOnly>
-                  <AdminPanel />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </div>
-        </div>
+        <AppLayout />
       </Router>
     </AuthProvider>
   );
