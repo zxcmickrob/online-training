@@ -342,3 +342,37 @@ h3 { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; mar
   .bento-card { padding: 24px; }
   .bento-grid { display: flex; flex-direction: column; gap: 16px; }
 }
+
+/* Custom Task Card Styling */
+.task-card-fixed {
+  height: 200px; /* Фиксированная высота */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-question-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* Максимум 4 строки */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-top: 10px;
+}
+
+.subtopic-badge {
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border: 1px solid var(--card-border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

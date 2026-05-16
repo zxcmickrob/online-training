@@ -69,6 +69,7 @@ def setup_routes(app):
         new_task = Task(
             number=data.get('number'),
             title=data.get('title'),
+            subtopic=data.get('subtopic'),
             question=data.get('question'),
             answer=data.get('answer')
         )
@@ -90,6 +91,7 @@ def setup_routes(app):
 
         task.number = data.get('number', task.number)
         task.title = data.get('title', task.title)
+        task.subtopic = data.get('subtopic', task.subtopic)
         task.question = data.get('question', task.question)
         task.answer = data.get('answer', task.answer)
 

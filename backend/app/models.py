@@ -15,6 +15,7 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100), nullable=False)
+    subtopic = db.Column(db.String(100), nullable=True)
     question = db.Column(db.Text, nullable=True)
     answer = db.Column(db.Text, nullable=True)
 
@@ -23,6 +24,7 @@ class Task(db.Model):
             "id": self.id,
             "number": self.number,
             "title": self.title,
+            "subtopic": self.subtopic,
             "question": self.question,
             "answer": self.answer
         }

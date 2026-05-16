@@ -17,59 +17,24 @@ const Training = () => {
   const { taskId } = useParams<{ taskId?: string }>(); 
   const navigate = useNavigate();
 
-  const TOPIC_ORDER = [
-    "Планиметрия",
-    "Стереометрия",
-    "Теория вероятностей",
-    "Логарифмические уравнения",
-    "Вычисления и преобразования",
-    "Производная",
-    "Текстовые задачи",
-    "Графики функций"
-  ];
-
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
         const allRes = await api.get('/tasks');
-        
-        // Сортируем задачи по темам и номерам для логичного переключения
-        const sortedTasks = allRes.data.sort((a: any, b: any) => {
-          const indexA = TOPIC_ORDER.indexOf(a.title);
-          const indexB = TOPIC_ORDER.indexOf(b.title);
-          
-          if (indexA !== indexB) {
-            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-            return a.title.localeCompare(b.title);
-          }
-          
-          return (parseInt(a.number) || 0) - (parseInt(b.number) || 0);
-        });
-
-        setTasks(sortedTasks);
+        const loadedTasks = allRes.data;
+        setTasks(loadedTasks);
 
         if (taskId) {
           const res = await api.get(`/tasks/${taskId}`);
           setCurrentTask(res.data);
-        } else if (sortedTasks.length > 0) {
-          setCurrentTask(sortedTasks[0]);
-          navigate(`/training/${sortedTasks[0].id}`, { replace: true });
+        } else if (loadedTasks.length > 0) {
+          setCurrentTask(loadedTasks[0]);
+          navigate(`/training/${loadedTasks[0].id}`, { replace: true });
         }
       } catch (err) {
-        console.error("Backend error, trying demo mode", err);
-        const saved = localStorage.getItem('demo_tasks');
-        if (saved) {
-          const demoTasks = JSON.parse(saved);
-          setTasks(demoTasks);
-          if (taskId) {
-            setCurrentTask(demoTasks.find((t: any) => t.id === parseInt(taskId)));
-          } else {
-            setCurrentTask(demoTasks[0]);
-          }
-        }
+        console.error("Backend error", err);
+        toast.error('Ошибка загрузки задач с сервера');
       } finally {
         setLoading(false);
       }
@@ -144,11 +109,11 @@ const Training = () => {
   );
 
   const renderMath = (text: string) => {
-    if (!text) return text;
+    if (!text || !text.includes('$')) return text;
     try {
       const parts = text.split('$');
       return parts.map((part, index) => {
-        if (index % 2 === 1) {
+        if (index % 2 === 1 && part && part.trim()) {
           return (
             <span 
               key={index} 
@@ -168,10 +133,38 @@ const Training = () => {
     <div style={{ paddingBottom: '100px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+          <button 
+            onClick={() => navigate('/')} 
+            style={{ 
+              background: 'rgba(255, 255, 255, 0.05)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              color: 'var(--text-p)', 
+              padding: '8px 16px', 
+              borderRadius: '12px', 
+              cursor: 'pointer',
+              marginBottom: '20px',
+              fontSize: '0.8rem',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: '0.3s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            НАЗАД
+          </button>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
             <span style={{ background: 'var(--grad)', color: 'white', padding: '2px 10px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '800' }}>
               МАТЕМАТИКА (ПРОФИЛЬНЫЙ УРОВЕНЬ)
             </span>
+            {currentTask.subtopic && (
+              <span className="subtopic-badge">
+                {currentTask.subtopic}
+              </span>
+            )}
           </div>
           <h1 style={{ fontSize: '3rem' }}>{currentTask.title}</h1>
         </motion.div>

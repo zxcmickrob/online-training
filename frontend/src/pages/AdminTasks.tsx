@@ -9,16 +9,16 @@ const API_URL = 'http://127.0.0.1:5000';
 
 const AdminTasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [formData, setFormData] = useState({ number: '', title: '', question: '', answer: '' });
+  const [formData, setFormData] = useState({ number: '', title: '', subtopic: '', question: '', answer: '' });
   const { logout } = useAuth();
 
   const fetchTasks = async () => {
     try {
       const response = await axios.get(`${API_URL}/tasks`);
       setTasks(response.data);
-    } catch {
-      const saved = localStorage.getItem('demo_tasks');
-      if (saved) setTasks(JSON.parse(saved));
+    } catch (err) {
+      console.error("Failed to fetch tasks from server", err);
+      toast.error('Ошибка загрузки задач с сервера');
     }
   };
 
@@ -35,13 +35,11 @@ const AdminTasks = () => {
       });
       toast.success('Задача опубликована на сервере');
       fetchTasks();
-    } catch {
-      const updated = [...tasks, { ...formData, id: Date.now() }];
-      setTasks(updated);
-      localStorage.setItem('demo_tasks', JSON.stringify(updated));
-      toast.success('Сохранено локально');
+      setFormData({ number: '', title: '', subtopic: '', question: '', answer: '' });
+    } catch (err) {
+      console.error("Failed to post task to server", err);
+      toast.error('Ошибка при публикации задачи');
     }
-    setFormData({ number: '', title: '', question: '', answer: '' });
   };
 
   const handleDeleteTask = async (id: number) => {
@@ -52,20 +50,28 @@ const AdminTasks = () => {
       });
       toast.success('Задача удалена');
       fetchTasks();
-    } catch {
-      const updated = tasks.filter((t: any) => t.id !== id);
-      setTasks(updated);
-      localStorage.setItem('demo_tasks', JSON.stringify(updated));
-      toast.success('Задача удалена локально');
+    } catch (err) {
+      console.error("Failed to delete task from server", err);
+      toast.error('Ошибка при удалении задачи');
     }
   };
 
   const renderMath = (text: string) => {
+    if (!text || !text.includes('$')) return text;
     try {
-      if (text && (text.includes('\\') || text.includes('_') || text.includes('^'))) {
-        return <span dangerouslySetInnerHTML={{ __html: katex.renderToString(text, { throwOnError: false }) }} />;
-      }
-      return text;
+      const parts = text.split('$');
+      return parts.map((part, index) => {
+        if (index % 2 === 1 && part && part.trim()) {
+          return (
+            <span 
+              key={index} 
+              style={{ color: 'var(--accent)', fontWeight: '700' }}
+              dangerouslySetInnerHTML={{ __html: katex.renderToString(part, { throwOnError: false }) }} 
+            />
+          );
+        }
+        return <span key={index}>{part}</span>;
+      });
     } catch (e) {
       return text;
     }
@@ -89,11 +95,12 @@ const AdminTasks = () => {
               <input className="main-input" placeholder="№" value={formData.number} onChange={e => setFormData({...formData, number: e.target.value})} required />
               <input className="main-input" placeholder="Тема задания" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
             </div>
+            <input className="main-input" placeholder="Подтема" value={formData.subtopic} onChange={e => setFormData({...formData, subtopic: e.target.value})} />
             <div>
               <textarea 
                 className="main-input" 
                 style={{ minHeight: '160px', resize: 'none', marginBottom: '10px' }}
-                placeholder="Текст задачи (можно использовать LaTeX: \log_2 x)"
+                placeholder="Текст задачи"
                 value={formData.question}
                 onChange={e => setFormData({...formData, question: e.target.value})}
                 required
@@ -107,13 +114,13 @@ const AdminTasks = () => {
             </div>
             <input className="main-input" placeholder="Правильный ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
 
-            <button type="submit" className="main-btn" style={{ marginTop: '10px' }}>ОПУБЛИКОВАТЬ ЗАДАНИЕ</button>
+            <button type="submit" className="main-btn" style={{ marginTop: '10px' }}>СОХРАНИТЬ</button>
           </form>
         </motion.div>
 
         {/* Список задач */}
         <motion.div className="bento-card" style={{ gridColumn: 'span 7' }} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Активные задачи ({tasks.length})</h3>
+          <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Все задачи ({tasks.length})</h3>
           <div style={{ display: 'grid', gap: '12px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
             {tasks.map((t: any) => (
               <div key={t.id} style={{ 
@@ -126,6 +133,9 @@ const AdminTasks = () => {
                   <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
                     <span style={{ color: 'var(--accent)', marginRight: '10px' }}>#{t.number}</span>
                     {t.title}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    {t.subtopic && <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: '800' }}>{t.subtopic.toUpperCase()}</span>}
                   </div>
                   <div style={{ color: 'var(--text-p)', fontSize: '0.85rem' }}>Правильный ответ: <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{t.answer}</span></div>
                 </div>

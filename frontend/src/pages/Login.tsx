@@ -52,12 +52,12 @@ const Login: React.FC = () => {
           background: 'none',
           WebkitTextFillColor: 'initial'
         }}>
-          <span style={{ color: 'white' }}>Твой путь к 100 баллам</span><br/>
+          <span style={{ color: 'white' }}>Подготовка к ЕГЭ</span><br/>
           <span style={{ 
             background: 'var(--grad)', 
             WebkitBackgroundClip: 'text', 
             WebkitTextFillColor: 'transparent' 
-          }}>через AI-технологии</span>
+          }}>профмат</span>
         </h1>
         <div style={{ 
             background: 'var(--grad)', 
@@ -85,7 +85,7 @@ const Login: React.FC = () => {
           <input 
             className="main-input"
             type="text" 
-            placeholder="Ваш логин" 
+            placeholder="Логин" 
             value={username} 
             onChange={e => setUsername(e.target.value)} 
             required 
@@ -93,12 +93,12 @@ const Login: React.FC = () => {
           <input 
             className="main-input"
             type="password" 
-            placeholder="Ваш пароль" 
+            placeholder="Пароль" 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
             required 
           />
-          <button type="submit" className="main-btn" style={{ fontSize: '1.2rem', padding: '20px', marginTop: '10px' }}>ВОЙТИ В СИСТЕМУ</button>
+          <button type="submit" className="main-btn" style={{ fontSize: '1.2rem', padding: '20px', marginTop: '10px' }}>ВОЙТИ</button>
         </form>
         
         <p style={{ textAlign: 'center', marginTop: '32px', color: 'var(--text-p)', fontSize: '1rem' }}>

@@ -40,7 +40,7 @@ const Register: React.FC = () => {
         style={{ textAlign: 'center', marginBottom: '60px' }}
       >
         <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.4em', fontSize: '0.8rem', display: 'block', marginBottom: '16px' }}>
-          {role === 'student' ? 'Присоединяйся к нам' : 'Инструменты для профи'}
+          {role === 'student' ? 'Присоединяйся к нам' : 'Присоединяйся к нам'}
         </span>
         <h1 style={{ 
           fontSize: 'clamp(2rem, 6vw, 4.5rem)', 
@@ -52,21 +52,21 @@ const Register: React.FC = () => {
         }}>
           {role === 'student' ? (
             <>
-              <span style={{ color: 'white' }}>Математика</span><br/>
+              <span style={{ color: 'white' }}>Профильная</span><br/>
               <span style={{ 
                 background: 'var(--grad)', 
                 WebkitBackgroundClip: 'text', 
                 WebkitTextFillColor: 'transparent' 
-              }}>без границ</span>
+              }}>математика</span>
             </>
           ) : (
             <>
-              <span style={{ color: 'white' }}>Фокус</span><br/>
+              <span style={{ color: 'white' }}>Профильная</span><br/>
               <span style={{ 
                 background: 'var(--grad)', 
                 WebkitBackgroundClip: 'text', 
                 WebkitTextFillColor: 'transparent' 
-              }}>на результате</span>
+              }}>математика</span>
             </>
           )}
         </h1>
@@ -120,7 +120,7 @@ const Register: React.FC = () => {
           <input 
             className="main-input"
             type="text" 
-            placeholder="Придумайте логин" 
+            placeholder="Логин" 
             value={username} 
             onChange={e => setUsername(e.target.value)} 
             required 
@@ -128,7 +128,7 @@ const Register: React.FC = () => {
           <input 
             className="main-input"
             type="password" 
-            placeholder="Придумайте пароль" 
+            placeholder="Пароль" 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
             required 

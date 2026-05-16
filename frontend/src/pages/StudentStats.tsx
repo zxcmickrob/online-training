@@ -48,7 +48,7 @@ const StudentStats: React.FC = () => {
   const getTopicStats = () => {
     const topicData: Record<string, { total: number, solved: number }> = {};
     tasks.forEach(task => {
-        const category = task.title.split(' (')[0];
+        const category = task.title || 'Без темы';
         if (!topicData[category]) topicData[category] = { total: 0, solved: 0 };
         topicData[category].total++;
         if (stats?.solved_tasks_ids.includes(task.id)) topicData[category].solved++;
@@ -60,10 +60,10 @@ const StudentStats: React.FC = () => {
 
   const getRank = (count: number) => {
     if (count === 0) return 'НОВИЧОК';
-    if (count < 3) return 'УЧЕНИК';
-    if (count < 10) return 'АЛГЕБРАИСТ';
-    if (count < 20) return 'МАСТЕР ЛОГАРИФМОВ';
-    return 'БОГ МАТЕМАТИКИ';
+    if (count < 5) return 'УЧЕНИК';
+    if (count < 15) return 'ПРОФИ';
+    if (count < 30) return 'МАГИСТР';
+    return 'ЛЕГЕНДА';
   };
 
   return (

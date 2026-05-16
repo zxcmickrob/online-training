@@ -18,6 +18,7 @@ cd backend
 cp .env.example .env
 poetry install
 poetry run flask db upgrade
+poetry run python load_tasks.py
 poetry run python run.py
 ```
 

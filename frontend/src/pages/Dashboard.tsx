@@ -10,6 +10,7 @@ interface Task {
   id: number;
   number: string | number;
   title: string;
+  subtopic?: string;
   question: string;
 }
 
@@ -25,6 +26,7 @@ const Dashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'solved' | 'unsolved'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
   
   const { role } = useAuth();
 
@@ -54,11 +56,11 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const renderMath = (text: string) => {
-    if (!text) return text;
+    if (!text || !text.includes('$')) return text;
     try {
       const parts = text.split('$');
       return parts.map((part, index) => {
-        if (index % 2 === 1) {
+        if (index % 2 === 1 && part && part.trim()) {
           return (
             <span 
               key={index} 
@@ -76,6 +78,7 @@ const Dashboard: React.FC = () => {
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         (task.subtopic || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          task.number.toString().includes(searchTerm);
     const isSolved = stats?.solved_tasks_ids.includes(task.id);
     
@@ -84,42 +87,33 @@ const Dashboard: React.FC = () => {
     return matchesSearch;
   });
 
-  const TOPIC_ORDER = [
-    "Планиметрия",
-    "Стереометрия",
-    "Теория вероятностей",
-    "Логарифмические уравнения",
-    "Вычисления и преобразования",
-    "Производная",
-    "Текстовые задачи",
-    "Графики функций"
-  ];
-
   const categoriesMap = filteredTasks.reduce((acc, task) => {
     const category = task.title || 'Без темы';
     if (!acc[category]) {
-      acc[category] = [];
+      acc[category] = {};
     }
-    acc[category].push(task);
+    const subtopic = task.subtopic || 'Общее';
+    if (!acc[category][subtopic]) {
+      acc[category][subtopic] = [];
+    }
+    acc[category][subtopic].push(task);
     return acc;
-  }, {} as Record<string, Task[]>);
+  }, {} as Record<string, Record<string, Task[]>>);
 
-  const sortedCategories = Object.entries(categoriesMap).sort((a, b) => {
-    const indexA = TOPIC_ORDER.indexOf(a[0]);
-    const indexB = TOPIC_ORDER.indexOf(b[0]);
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return a[0].localeCompare(b[0]);
-  });
+  const sortedCategories = Object.entries(categoriesMap).sort((a, b) => a[0].localeCompare(b[0]));
 
-  sortedCategories.forEach(([_, catTasks]) => {
-    catTasks.sort((a, b) => {
-      const numA = parseInt(String(a.number)) || 0;
-      const numB = parseInt(String(b.number)) || 0;
-      return numA - numB;
-    });
-  });
+  const getCategoryStats = (subtopics: Record<string, Task[]>) => {
+    const allTasks = Object.values(subtopics).flat();
+    const total = allTasks.length;
+    const solved = allTasks.filter(t => stats?.solved_tasks_ids.includes(t.id)).length;
+    return { total, solved, percent: total > 0 ? Math.round((solved / total) * 100) : 0 };
+  };
+
+  const getSubtopicStats = (subtopicTasks: Task[]) => {
+    const total = subtopicTasks.length;
+    const solved = subtopicTasks.filter(t => stats?.solved_tasks_ids.includes(t.id)).length;
+    return { total, solved, percent: total > 0 ? Math.round((solved / total) * 100) : 0 };
+  };
 
   const solvedCount = stats?.solved_count || 0;
 
@@ -139,12 +133,6 @@ const Dashboard: React.FC = () => {
     return 'legend';
   };
 
-  const getCategoryStats = (categoryTasks: Task[]) => {
-    const total = categoryTasks.length;
-    const solved = categoryTasks.filter(t => stats?.solved_tasks_ids.includes(t.id)).length;
-    return { total, solved, percent: total > 0 ? Math.round((solved / total) * 100) : 0 };
-  };
-
   return (
     <div style={{ paddingBottom: '100px' }}>
       <div style={{ marginBottom: '64px' }}>
@@ -156,23 +144,28 @@ const Dashboard: React.FC = () => {
               </span>
               <h1 style={{ marginTop: '10px' }}>Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}!</h1>
             </div>
-            {selectedCategory && (
-              <button 
-                onClick={() => setSelectedCategory(null)}
-                style={{ 
-                  background: 'rgba(255,255,255,0.05)', 
-                  border: '1px solid var(--card-border)', 
-                  padding: '12px 24px',
-                  borderRadius: '16px',
-                  fontWeight: '800',
-                  color: 'white',
-                  cursor: 'pointer',
-                  transition: '0.3s'
-                }}
-              >
-                ← К КАТЕГОРИЯМ
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {selectedCategory && (
+                <button 
+                  onClick={() => {
+                    if (selectedSubtopic) setSelectedSubtopic(null);
+                    else setSelectedCategory(null);
+                  }}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    border: '1px solid var(--card-border)', 
+                    padding: '12px 24px',
+                    borderRadius: '16px',
+                    fontWeight: '800',
+                    color: 'white',
+                    cursor: 'pointer',
+                    transition: '0.3s'
+                  }}
+                >
+                  ← {selectedSubtopic ? 'К ПОДТЕМАМ' : 'К КАТЕГОРИЯМ'}
+                </button>
+              )}
+            </div>
           </div>
           {role !== 'admin' && !selectedCategory && (
               <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '15px' }}>
@@ -185,7 +178,9 @@ const Dashboard: React.FC = () => {
 
       <div className="bento-grid">
         <motion.div className="bento-card span-12" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-          <h3 style={{ margin: '0 0 20px 0' }}>{selectedCategory ? `Задания: ${selectedCategory}` : 'База знаний'}</h3>
+          <h3 style={{ margin: '0 0 20px 0' }}>
+            {selectedSubtopic ? `${selectedCategory} → ${selectedSubtopic}` : selectedCategory ? `Подтемы: ${selectedCategory}` : 'База знаний'}
+          </h3>
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <input 
               className="main-input" 
@@ -222,8 +217,8 @@ const Dashboard: React.FC = () => {
                 exit={{ opacity: 0, x: 20 }}
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}
               >
-                {sortedCategories.map(([category, catTasks]) => {
-                  const { total, solved, percent } = getCategoryStats(catTasks);
+                {sortedCategories.map(([category, subtopics]) => {
+                  const { total, solved, percent } = getCategoryStats(subtopics);
                   return (
                     <motion.div 
                       key={category}
@@ -246,8 +241,41 @@ const Dashboard: React.FC = () => {
                         />
                       </div>
                       <button className="main-btn" style={{ marginTop: '25px', width: '100%', background: 'rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
-                        ОТКРЫТЬ ЗАДАНИЯ →
+                        →
                       </button>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            ) : !selectedSubtopic ? (
+              <motion.div 
+                key="subtopics"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}
+              >
+                {Object.entries(categoriesMap[selectedCategory] || {}).map(([subtopic, subTasks]) => {
+                  const { total, solved, percent } = getSubtopicStats(subTasks);
+                  return (
+                    <motion.div 
+                      key={subtopic}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      onClick={() => setSelectedSubtopic(subtopic)}
+                      className="bento-card"
+                      style={{ cursor: 'pointer', padding: '24px', border: '1px solid rgba(255,255,255,0.05)' }}
+                    >
+                      <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>{subtopic}</h3>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-p)', marginBottom: '12px' }}>
+                        Заданий: {total} (Решено: {solved})
+                      </div>
+                      <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          style={{ height: '100%', background: 'var(--grad)', borderRadius: '10px' }}
+                        />
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -260,7 +288,7 @@ const Dashboard: React.FC = () => {
                 exit={{ opacity: 0, x: -20 }}
               >
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                  {(categoriesMap[selectedCategory] || []).map((task) => {
+                  {(categoriesMap[selectedCategory]?.[selectedSubtopic] || []).map((task) => {
                     const isSolved = stats?.solved_tasks_ids.includes(task.id);
                     return (
                       <motion.div 
@@ -271,12 +299,8 @@ const Dashboard: React.FC = () => {
                       >
                         <Link 
                           to={`/training/${task.id}`} 
-                          className="bento-card" 
+                          className="bento-card task-card-fixed" 
                           style={{ 
-                            minHeight: '110px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            padding: '20px 24px',
                             border: isSolved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--card-border)',
                             textDecoration: 'none',
                             cursor: 'pointer'
@@ -288,8 +312,11 @@ const Dashboard: React.FC = () => {
                               <span style={{ color: '#10b981', fontSize: '0.65rem', fontWeight: '800' }}>РЕШЕНО</span>
                             )}
                           </div>
-                          <div style={{ fontSize: '1rem', lineHeight: '1.4', color: '#e2e8f0', flex: 1 }}>
+                          <div className="task-question-preview">
                               {renderMath(task.question)}
+                          </div>
+                          <div style={{ marginTop: 'auto', paddingTop: '15px' }}>
+                             <span className="subtopic-badge">{selectedSubtopic}</span>
                           </div>
                         </Link>
                       </motion.div>
@@ -300,7 +327,9 @@ const Dashboard: React.FC = () => {
             )}
           </AnimatePresence>
 
-          {((!selectedCategory && sortedCategories.length === 0) || (selectedCategory && (!categoriesMap[selectedCategory] || categoriesMap[selectedCategory].length === 0))) && (
+          {((!selectedCategory && sortedCategories.length === 0) || 
+            (selectedCategory && !selectedSubtopic && Object.keys(categoriesMap[selectedCategory] || {}).length === 0) ||
+            (selectedSubtopic && (!categoriesMap[selectedCategory]?.[selectedSubtopic] || categoriesMap[selectedCategory][selectedSubtopic].length === 0))) && (
             <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-p)' }}>
               <h2>Задач не найдено</h2>
               <p>Попробуй изменить параметры поиска или фильтры</p>
