@@ -67,32 +67,32 @@ const StudentStats: React.FC = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
-      <header style={{ marginBottom: '60px' }}>
+    <div style={{ paddingBottom: '40px' }}>
+      <header style={{ marginBottom: '40px' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
+          <span style={{ color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.8rem' }}>
             Личные достижения
           </span>
-          <h1 style={{ marginTop: '10px' }}>Твоя статистика, {stats?.username}</h1>
+          <h1 style={{ marginTop: '4px' }}>Твоя статистика, {stats?.username}</h1>
           
           {/* Визуализация системы рангов */}
-          <div style={{ marginTop: '30px', background: 'rgba(255,255,255,0.03)', padding: '25px', borderRadius: '20px', border: '1px solid var(--card-border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-              <span style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '600' }}>Прогресс ранга</span>
-              <span style={{ color: 'var(--accent)', fontWeight: '800' }}>{getRank(solvedCount)}</span>
+          <div style={{ marginTop: '24px', background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '500' }}>Прогресс ранга</span>
+              <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{getRank(solvedCount)}</span>
             </div>
             
-            <div style={{ position: 'relative', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'relative', height: '8px', background: 'var(--input-bg)', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
               {/* Фоновые деления для рангов */}
-              {[0, 3, 10, 20].map((threshold, idx) => (
+              {[0, 3, 10, 20].map((threshold) => (
                 <div 
                   key={threshold} 
                   style={{ 
                     position: 'absolute', 
                     left: `${(threshold / 25) * 100}%`, 
-                    height: '20px', 
+                    height: '14px', 
                     width: '2px', 
-                    background: solvedCount >= threshold ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
+                    background: solvedCount >= threshold ? 'var(--accent)' : 'var(--card-border)',
                     zIndex: 1
                   }} 
                 />
@@ -103,11 +103,11 @@ const StudentStats: React.FC = () => {
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min((solvedCount / 25) * 100, 100)}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                style={{ height: '100%', background: 'var(--grad)', borderRadius: '10px', position: 'relative', zIndex: 0 }}
+                style={{ height: '100%', background: 'var(--grad)', borderRadius: '4px', position: 'relative', zIndex: 0 }}
               />
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '0.7rem', color: 'var(--text-p)', fontWeight: '700' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-p)', fontWeight: '600' }}>
               <span>НОВИЧОК (0)</span>
               <span style={{ marginLeft: '-20px' }}>УЧЕНИК (3)</span>
               <span>АЛГЕБРАИСТ (10)</span>
@@ -123,14 +123,14 @@ const StudentStats: React.FC = () => {
         <motion.div 
           className="bento-card" 
           style={{ gridColumn: 'span 4' }} 
-          initial={{ opacity: 0, scale: 0.9 }} 
+          initial={{ opacity: 0, scale: 0.95 }} 
           animate={{ opacity: 1, scale: 1 }}
         >
           <h3 style={{ margin: 0 }}>Общий прогресс</h3>
-          <div style={{ fontSize: '4rem', fontWeight: '800', color: 'var(--accent)', margin: '20px 0' }}>
+          <div style={{ fontSize: '2.5rem', fontWeight: '700', color: 'var(--accent)', margin: '16px 0' }}>
             {progressPercent}%
           </div>
-          <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', background: 'var(--input-bg)', borderRadius: '4px', overflow: 'hidden' }}>
             <motion.div 
               initial={{ width: 0 }} 
               animate={{ width: `${progressPercent}%` }} 
@@ -138,7 +138,7 @@ const StudentStats: React.FC = () => {
               style={{ height: '100%', background: 'var(--grad)' }} 
             />
           </div>
-          <p style={{ color: 'var(--text-p)', marginTop: '15px', fontSize: '0.9rem' }}>
+          <p style={{ color: 'var(--text-p)', marginTop: '12px', fontSize: '0.9rem' }}>
             Решено задач: {solvedCount} из {totalTasks}
           </p>
         </motion.div>
@@ -147,23 +147,23 @@ const StudentStats: React.FC = () => {
         <motion.div 
           className="bento-card" 
           style={{ gridColumn: 'span 8' }} 
-          initial={{ opacity: 0, scale: 0.9 }} 
+          initial={{ opacity: 0, scale: 0.95 }} 
           animate={{ opacity: 1, scale: 1 }} 
           transition={{ delay: 0.1 }}
         >
-          <h3 style={{ margin: '0 0 20px 0' }}>Успехи по темам</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+          <h3 style={{ margin: '0 0 16px 0' }}>Успехи по темам</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
             {Object.entries(topicStats).map(([topic, data]) => (
-              <div key={topic} style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '15px', border: '1px solid var(--card-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem' }}>
-                  <span style={{ fontWeight: '700' }}>{topic}</span>
-                  <span style={{ color: 'var(--accent)' }}>{data.solved}/{data.total}</span>
+              <div key={topic} style={{ background: 'var(--input-bg)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text-h)' }}>{topic}</span>
+                  <span style={{ color: 'var(--accent)', fontWeight: '600' }}>{data.solved}/{data.total}</span>
                 </div>
-                <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ height: '4px', background: 'var(--input-bg)', borderRadius: '2px', overflow: 'hidden' }}>
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${(data.solved / data.total) * 100}%` }}
-                    transition={{ duration: 1, delay: 0.3 }}
+                    transition={{ duration: 1, delay: 0.2 }}
                     style={{ height: '100%', background: 'var(--grad)' }} 
                   />
                 </div>
@@ -176,22 +176,22 @@ const StudentStats: React.FC = () => {
         <motion.div 
           className="bento-card" 
           style={{ gridColumn: 'span 12' }} 
-          initial={{ opacity: 0, scale: 0.9 }} 
+          initial={{ opacity: 0, scale: 0.95 }} 
           animate={{ opacity: 1, scale: 1 }} 
           transition={{ delay: 0.2 }}
         >
-          <h3 style={{ margin: '0 0 20px 0' }}>Решенные задачи</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <h3 style={{ margin: '0 0 16px 0' }}>Решенные задачи</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {tasks.filter(t => stats?.solved_tasks_ids.includes(t.id)).map(task => (
               <div 
                 key={task.id} 
                 style={{ 
                   background: 'rgba(16, 185, 129, 0.1)', 
                   color: '#10b981', 
-                  padding: '8px 16px', 
-                  borderRadius: '10px', 
+                  padding: '6px 12px', 
+                  borderRadius: '6px', 
                   fontSize: '0.85rem', 
-                  fontWeight: '700',
+                  fontWeight: '600',
                   border: '1px solid rgba(16, 185, 129, 0.2)'
                 }}
               >
@@ -199,7 +199,7 @@ const StudentStats: React.FC = () => {
               </div>
             ))}
             {solvedCount === 0 && (
-              <div style={{ color: 'var(--text-p)', padding: '20px 0' }}>
+              <div style={{ color: 'var(--text-p)', padding: '16px 0', fontSize: '0.95rem' }}>
                 Вы еще не решили ни одной задачи. Самое время начать!
               </div>
             )}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import katex from 'katex';
 
@@ -10,7 +9,6 @@ const API_URL = 'http://127.0.0.1:5000';
 const AdminTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [formData, setFormData] = useState({ number: '', title: '', subtopic: '', question: '', answer: '' });
-  const { logout } = useAuth();
 
   const fetchTasks = async () => {
     try {
@@ -78,77 +76,126 @@ const AdminTasks = () => {
   };
 
   return (
-    <div style={{ paddingBottom: '100px' }}>
-      <header style={{ marginBottom: '60px' }}>
-        <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
+    <div style={{ paddingBottom: '40px' }}>
+      <header style={{ marginBottom: '40px' }}>
+        <span style={{ color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.8rem' }}>
           Панель управления
         </span>
-        <h1>Редактор заданий</h1>
+        <h1 style={{ marginTop: '4px' }}>Редактор заданий</h1>
       </header>
 
       <div className="bento-grid">
         {/* Форма добавления */}
-        <motion.div className="bento-card" style={{ gridColumn: 'span 5' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Новое задание</h3>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.5fr', gap: '15px' }}>
-              <input className="main-input" placeholder="№" value={formData.number} onChange={e => setFormData({...formData, number: e.target.value})} required />
-              <input className="main-input" placeholder="Тема задания" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+        <motion.div className="bento-card" style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--card-border)' }}>
+            <h3 style={{ margin: 0 }}>Новое задание</h3>
+            <p style={{ color: 'var(--text-p)', fontSize: '0.85rem', marginTop: '8px', marginBottom: 0 }}>
+              Добавьте новую задачу в базу данных. Можно использовать $LaTeX$ для формул.
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Номер и Тема</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px' }}>
+                <input className="main-input" placeholder="№" value={formData.number} onChange={e => setFormData({...formData, number: e.target.value})} required />
+                <input className="main-input" placeholder="Например: Текстовые задачи" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+              </div>
             </div>
-            <input className="main-input" placeholder="Подтема" value={formData.subtopic} onChange={e => setFormData({...formData, subtopic: e.target.value})} />
-            <div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Подтема (Опционально)</label>
+              <input className="main-input" placeholder="Уточняющий тег" value={formData.subtopic} onChange={e => setFormData({...formData, subtopic: e.target.value})} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Текст задачи</label>
               <textarea 
                 className="main-input" 
-                style={{ minHeight: '160px', resize: 'none', marginBottom: '10px' }}
-                placeholder="Текст задачи"
+                style={{ minHeight: '150px', resize: 'vertical' }}
+                placeholder="Текст задачи. Оберните формулы в знаки доллара: $x^2 + y^2 = r^2$"
                 value={formData.question}
                 onChange={e => setFormData({...formData, question: e.target.value})}
                 required
               />
-              {formData.question && (
-                <div style={{ padding: '20px', background: 'rgba(168, 85, 247, 0.05)', borderRadius: '20px', fontSize: '1.2rem', textAlign: 'center', border: '1px dashed var(--card-border)' }}>
-                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-p)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Предпросмотр:</span>
-                  <div style={{ color: 'white' }}>{renderMath(formData.question)}</div>
-                </div>
-              )}
             </div>
-            <input className="main-input" placeholder="Правильный ответ" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
 
-            <button type="submit" className="main-btn" style={{ marginTop: '10px' }}>СОХРАНИТЬ</button>
+            {formData.question && (
+              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '8px', fontSize: '1rem', border: '1px solid var(--card-border)', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', borderBottom: '1px solid var(--card-border)', paddingBottom: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-p)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>Предпросмотр</span>
+                </div>
+                <div style={{ color: 'var(--text-h)', wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                  {renderMath(formData.question)}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Правильный ответ</label>
+              <input className="main-input" placeholder="Число или строка" value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} required />
+            </div>
+
+            <button type="submit" className="main-btn" style={{ marginTop: 'auto', padding: '14px', fontSize: '1rem' }}>СОХРАНИТЬ ЗАДАЧУ</button>
           </form>
         </motion.div>
 
         {/* Список задач */}
-        <motion.div className="bento-card" style={{ gridColumn: 'span 7' }} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <h3 style={{ marginTop: 0, marginBottom: '24px' }}>Все задачи ({tasks.length})</h3>
-          <div style={{ display: 'grid', gap: '12px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
+        <motion.div className="bento-card" style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', height: '800px' }} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0 }}>База задач</h3>
+            <span style={{ background: 'var(--input-bg)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-p)', border: '1px solid var(--card-border)' }}>
+              Всего: {tasks.length}
+            </span>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', paddingRight: '12px', flex: 1, margin: '0 -4px 0 0' }} className="custom-scrollbar">
             {tasks.map((t: any) => (
               <div key={t.id} style={{ 
-                background: 'rgba(255,255,255,0.02)', padding: '20px 24px', 
-                borderRadius: '24px', display: 'flex', justifyContent: 'space-between',
-                alignItems: 'center', border: '1px solid var(--card-border)',
-                transition: 'all 0.3s ease'
+                background: 'var(--input-bg)', padding: '16px', 
+                borderRadius: '12px', border: '1px solid var(--card-border)',
+                transition: 'all 0.2s ease', position: 'relative'
               }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
-                    <span style={{ color: 'var(--accent)', marginRight: '10px' }}>#{t.number}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-h)' }}>
+                    <span style={{ color: 'var(--accent)', marginRight: '8px' }}>#{t.number}</span>
                     {t.title}
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                    {t.subtopic && <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: '800' }}>{t.subtopic.toUpperCase()}</span>}
-                  </div>
-                  <div style={{ color: 'var(--text-p)', fontSize: '0.85rem' }}>Правильный ответ: <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{t.answer}</span></div>
+                  <button 
+                    onClick={() => {
+                      if (window.confirm('Точно удалить эту задачу?')) handleDeleteTask(t.id);
+                    }}
+                    style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    title="Удалить"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    УДАЛИТЬ
+                  </button>
                 </div>
-                <button 
-                  onClick={() => {
-                    if (window.confirm('Точно удалить эту задачу?')) handleDeleteTask(t.id);
-                  }}
-                  style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: 'none', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: '800', fontSize: '0.75rem', marginLeft: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}
-                >
-                  Удалить
-                </button>
+                
+                {t.subtopic && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <span className="subtopic-badge" style={{ fontSize: '0.7rem' }}>{t.subtopic}</span>
+                  </div>
+                )}
+                
+                <div style={{ color: 'var(--text-p)', fontSize: '0.85rem', marginBottom: '12px', wordBreak: 'break-word', overflowWrap: 'anywhere', lineHeight: '1.5' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text-h)' }}>Условие:</span> {t.question.length > 150 ? t.question.substring(0, 150) + '...' : t.question}
+                </div>
+                
+                <div style={{ display: 'inline-block', background: 'var(--surface)', border: '1px solid var(--card-border)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--text-p)' }}>Правильный ответ:</span> <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{t.answer}</span>
+                </div>
               </div>
             ))}
+            
+            {tasks.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-p)' }}>
+                Задач пока нет. Добавьте первую задачу!
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

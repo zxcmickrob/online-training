@@ -27,11 +27,13 @@ const Dashboard: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'solved' | 'unsolved'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const { role } = useAuth();
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const [tasksRes, statsRes] = await Promise.all([
         api.get('/tasks'),
         api.get('/statistics')
@@ -48,6 +50,8 @@ const Dashboard: React.FC = () => {
       setStats(statsRes.data);
     } catch {
       console.error('Failed to fetch data');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,210 +137,283 @@ const Dashboard: React.FC = () => {
     return 'legend';
   };
 
+  const handleBack = () => {
+    if (selectedSubtopic) {
+      setSelectedSubtopic(null);
+    } else if (selectedCategory) {
+      setSelectedCategory(null);
+    }
+  };
+
   return (
-    <div style={{ paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '64px' }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <span style={{ color: 'var(--accent)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.8rem' }}>
-                Личный кабинет
-              </span>
-              <h1 style={{ marginTop: '10px' }}>Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}!</h1>
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {selectedCategory && (
-                <button 
-                  onClick={() => {
-                    if (selectedSubtopic) setSelectedSubtopic(null);
-                    else setSelectedCategory(null);
-                  }}
-                  style={{ 
-                    background: 'rgba(255,255,255,0.05)', 
-                    border: '1px solid var(--card-border)', 
-                    padding: '12px 24px',
-                    borderRadius: '16px',
-                    fontWeight: '800',
-                    color: 'white',
-                    cursor: 'pointer',
-                    transition: '0.3s'
-                  }}
-                >
-                  ← {selectedSubtopic ? 'К ПОДТЕМАМ' : 'К КАТЕГОРИЯМ'}
-                </button>
-              )}
-            </div>
-          </div>
-          {role !== 'admin' && !selectedCategory && (
-              <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '15px' }}>
-                <div className={`rank-badge ${getRankClass(solvedCount)}`} style={{ padding: '8px 20px', fontSize: '0.9rem' }}>{getRank(solvedCount)}</div>
-                <div style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '600' }}>Решено задач: {solvedCount}</div>
-              </div>
-          )}
+    <div style={{ paddingBottom: '60px' }}>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <h1 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>
+            Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}! 👋
+          </h1>
+          <p style={{ color: 'var(--text-p)', margin: 0, fontSize: '1rem', maxWidth: '600px' }}>
+            {role === 'admin' 
+              ? 'Добро пожаловать в базу знаний. Здесь вы можете просматривать все доступные задания.' 
+              : 'Добро пожаловать в базу знаний. Выбирай нужную тему, решай задачи и повышай свой ранг.'}
+          </p>
         </motion.div>
+        
+        {role !== 'admin' && (
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Твой ранг</span>
+            <div className={`rank-badge ${getRankClass(solvedCount)}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+              {getRank(solvedCount)}
+            </div>
+          </motion.div>
+        )}
       </div>
 
-      <div className="bento-grid">
-        <motion.div className="bento-card span-12" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-          <h3 style={{ margin: '0 0 20px 0' }}>
-            {selectedSubtopic ? `${selectedCategory} → ${selectedSubtopic}` : selectedCategory ? `Подтемы: ${selectedCategory}` : 'База знаний'}
-          </h3>
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+      {/* Breadcrumbs and Controls */}
+      <div style={{ marginBottom: '24px' }}>
+        <AnimatePresence mode="popLayout">
+          {selectedCategory && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+            >
+              <button 
+                onClick={handleBack}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-p)', cursor: 'pointer', background: 'var(--surface)', border: '1px solid var(--card-border)', padding: '8px 16px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                onMouseOver={e => e.currentTarget.style.color = 'var(--text-h)'}
+                onMouseOut={e => e.currentTarget.style.color = 'var(--text-p)'}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                Назад
+              </button>
+              <span style={{ color: 'var(--card-border)' }}>/</span>
+              <span style={{ color: selectedSubtopic ? 'var(--text-p)' : 'var(--text-h)', fontWeight: '600', fontSize: '0.95rem' }}>{selectedCategory}</span>
+              {selectedSubtopic && (
+                <>
+                  <span style={{ color: 'var(--card-border)' }}>/</span>
+                  <span style={{ color: 'var(--text-h)', fontWeight: '600', fontSize: '0.95rem' }}>{selectedSubtopic}</span>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', background: 'var(--surface)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+          {/* Search */}
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '250px', background: 'var(--input-bg)', borderRadius: '8px', padding: '0 12px', border: '1px solid transparent' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-p)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input 
-              className="main-input" 
-              style={{ flex: 1, minWidth: '200px' }}
-              placeholder="Поиск по теме или номеру..." 
+              style={{ border: 'none', background: 'transparent', width: '100%', padding: '10px 10px', color: 'var(--text-h)', outline: 'none', fontSize: '0.95rem', fontFamily: 'inherit' }} 
+              placeholder="Поиск по теме или номеру задания..." 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
-            <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '5px', borderRadius: '15px', flexWrap: 'wrap' }}>
-              {(['all', 'solved', 'unsolved'] as const).map((f) => (
-                <button 
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  style={{
-                    background: filter === f ? 'var(--grad)' : 'transparent',
-                    border: 'none', color: 'white', padding: '8px 16px', borderRadius: '10px',
-                    fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', transition: '0.3s'
-                  }}
-                >
-                  {f === 'all' ? 'Все' : f === 'solved' ? 'Решенные' : 'В процессе'}
-                </button>
-              ))}
-            </div>
           </div>
-        </motion.div>
-
-        <div className="span-12" style={{ marginTop: '40px' }}>
-          <AnimatePresence mode="wait">
-            {!selectedCategory ? (
-              <motion.div 
-                key="categories"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}
+          
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: '4px', background: 'var(--input-bg)', padding: '4px', borderRadius: '8px' }}>
+            {(['all', 'solved', 'unsolved'] as const).map((f) => (
+              <button 
+                key={f}
+                onClick={() => setFilter(f)}
+                style={{
+                  background: filter === f ? 'var(--surface)' : 'transparent',
+                  border: filter === f ? '1px solid var(--card-border)' : '1px solid transparent',
+                  color: filter === f ? 'var(--text-h)' : 'var(--text-p)',
+                  padding: '8px 16px', borderRadius: '6px',
+                  fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', transition: '0.2s',
+                  boxShadow: filter === f ? '0 2px 4px rgba(0,0,0,0.05)' : 'none'
+                }}
               >
-                {sortedCategories.map(([category, subtopics]) => {
-                  const { total, solved, percent } = getCategoryStats(subtopics);
-                  return (
-                    <motion.div 
-                      key={category}
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      onClick={() => setSelectedCategory(category)}
-                      className="bento-card"
-                      style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-                    >
-                      <div style={{ position: 'absolute', top: 0, right: 0, width: '100px', height: '100px', background: 'var(--grad)', opacity: 0.05, borderRadius: '0 0 0 100%', pointerEvents: 'none' }}></div>
-                      <h2 style={{ fontSize: '1.6rem', marginBottom: '15px' }}>{category}</h2>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem', color: 'var(--text-p)' }}>
-                        <span>Прогресс: {percent}%</span>
-                        <span>{solved} / {total}</span>
-                      </div>
-                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${percent}%` }}
-                          style={{ height: '100%', background: 'var(--grad)', borderRadius: '10px', boxShadow: '0 0 10px var(--accent-glow)' }}
-                        />
-                      </div>
-                      <button className="main-btn" style={{ marginTop: '25px', width: '100%', background: 'rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
-                        →
-                      </button>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            ) : !selectedSubtopic ? (
-              <motion.div 
-                key="subtopics"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}
-              >
-                {Object.entries(categoriesMap[selectedCategory] || {}).map(([subtopic, subTasks]) => {
-                  const { total, solved, percent } = getSubtopicStats(subTasks);
-                  return (
-                    <motion.div 
-                      key={subtopic}
-                      whileHover={{ y: -5, scale: 1.02 }}
-                      onClick={() => setSelectedSubtopic(subtopic)}
-                      className="bento-card"
-                      style={{ cursor: 'pointer', padding: '24px', border: '1px solid rgba(255,255,255,0.05)' }}
-                    >
-                      <h3 style={{ fontSize: '1.2rem', marginBottom: '10px' }}>{subtopic}</h3>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-p)', marginBottom: '12px' }}>
-                        Заданий: {total} (Решено: {solved})
-                      </div>
-                      <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${percent}%` }}
-                          style={{ height: '100%', background: 'var(--grad)', borderRadius: '10px' }}
-                        />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="tasks"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                  {(categoriesMap[selectedCategory]?.[selectedSubtopic] || []).map((task) => {
-                    const isSolved = stats?.solved_tasks_ids.includes(task.id);
-                    return (
-                      <motion.div 
-                        key={task.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ y: -5, scale: 1.01 }}
-                      >
-                        <Link 
-                          to={`/training/${task.id}`} 
-                          className="bento-card task-card-fixed" 
-                          style={{ 
-                            border: isSolved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--card-border)',
-                            textDecoration: 'none',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <span style={{ color: 'var(--accent)', fontWeight: '800', fontSize: '0.8rem', opacity: 0.8, letterSpacing: '1px' }}>№{task.number}</span>
-                            {isSolved && (
-                              <span style={{ color: '#10b981', fontSize: '0.65rem', fontWeight: '800' }}>РЕШЕНО</span>
-                            )}
-                          </div>
-                          <div className="task-question-preview">
-                              {renderMath(task.question)}
-                          </div>
-                          <div style={{ marginTop: 'auto', paddingTop: '15px' }}>
-                             <span className="subtopic-badge">{selectedSubtopic}</span>
-                          </div>
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {((!selectedCategory && sortedCategories.length === 0) || 
-            (selectedCategory && !selectedSubtopic && Object.keys(categoriesMap[selectedCategory] || {}).length === 0) ||
-            (selectedSubtopic && (!categoriesMap[selectedCategory]?.[selectedSubtopic] || categoriesMap[selectedCategory][selectedSubtopic].length === 0))) && (
-            <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-p)' }}>
-              <h2>Задач не найдено</h2>
-              <p>Попробуй изменить параметры поиска или фильтры</p>
-            </div>
-          )}
+                {f === 'all' ? 'Все задания' : f === 'solved' ? 'Решенные' : 'В процессе'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Main Content List */}
+      <AnimatePresence mode="wait">
+        {/* VIEW: CATEGORIES */}
+        {!selectedCategory && (
+          <motion.div 
+            key="categories"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            {sortedCategories.map(([category, subtopics]) => {
+              const { total, solved, percent } = getCategoryStats(subtopics);
+              const isComplete = percent === 100 && total > 0;
+              return (
+                <motion.div 
+                  key={category}
+                  whileHover={{ x: 4, background: 'var(--surface)' }}
+                  onClick={() => setSelectedCategory(category)}
+                  style={{ 
+                    background: 'var(--input-bg)', borderRadius: '12px', padding: '16px 20px', cursor: 'pointer',
+                    border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    transition: 'all 0.2s ease', flexWrap: 'wrap', gap: '16px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '0', color: 'var(--text-h)' }}>
+                      {category}
+                    </h2>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '200px' }}>
+                      <div style={{ flex: 1, height: '4px', background: 'var(--card-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          style={{ height: '100%', background: isComplete ? '#10b981' : 'var(--accent)', borderRadius: '2px' }}
+                        />
+                      </div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '700', color: isComplete ? '#10b981' : 'var(--text-h)', width: '40px', textAlign: 'right' }}>
+                        {solved}<span style={{ color: 'var(--text-p)', fontSize: '0.8rem', fontWeight: '500' }}>/{total}</span>
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--text-p)' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* VIEW: SUBTOPICS */}
+        {selectedCategory && !selectedSubtopic && (
+          <motion.div 
+            key="subtopics"
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            {Object.entries(categoriesMap[selectedCategory] || {}).map(([subtopic, subTasks]) => {
+              const { total, solved, percent } = getSubtopicStats(subTasks);
+              const isComplete = percent === 100 && total > 0;
+              return (
+                <motion.div 
+                  key={subtopic}
+                  whileHover={{ x: 4, background: 'var(--surface)' }}
+                  onClick={() => setSelectedSubtopic(subtopic)}
+                  style={{ 
+                    background: 'var(--input-bg)', borderRadius: '12px', padding: '16px 20px', cursor: 'pointer',
+                    border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    transition: 'all 0.2s ease', flexWrap: 'wrap', gap: '16px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: '600', margin: '0', color: 'var(--text-h)' }}>
+                      {subtopic}
+                    </h3>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '200px' }}>
+                      <div style={{ flex: 1, height: '4px', background: 'var(--card-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percent}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          style={{ height: '100%', background: isComplete ? '#10b981' : 'var(--accent)', borderRadius: '2px' }}
+                        />
+                      </div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '700', color: isComplete ? '#10b981' : 'var(--text-h)', width: '40px', textAlign: 'right' }}>
+                        {solved}<span style={{ color: 'var(--text-p)', fontSize: '0.8rem', fontWeight: '500' }}>/{total}</span>
+                      </span>
+                    </div>
+                    <div style={{ color: 'var(--text-p)' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* VIEW: TASKS */}
+        {selectedCategory && selectedSubtopic && (
+          <motion.div 
+            key="tasks"
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
+            {(categoriesMap[selectedCategory]?.[selectedSubtopic] || []).map((task) => {
+              const isSolved = stats?.solved_tasks_ids.includes(task.id);
+              return (
+                <Link 
+                  key={task.id}
+                  to={`/training/${task.id}`} 
+                  style={{ textDecoration: 'none' }}
+                >
+                  <motion.div 
+                    whileHover={{ x: 4, borderColor: 'var(--accent)' }}
+                    style={{ 
+                      background: 'var(--input-bg)', borderRadius: '12px', padding: '16px 20px', cursor: 'pointer',
+                      border: isSolved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--card-border)', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px',
+                      boxShadow: isSolved ? '0 4px 12px rgba(16, 185, 129, 0.05)' : 'none',
+                      position: 'relative', overflow: 'hidden', transition: 'all 0.2s', flexWrap: 'wrap'
+                    }}
+                  >
+                    {isSolved && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: '#10b981' }} />}
+                    
+                    <div style={{ flex: 1, minWidth: '250px', paddingLeft: isSolved ? '12px' : '0', transition: 'padding 0.2s' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-p)', fontWeight: '700', fontSize: '0.85rem' }}>Задача №{task.number}</span>
+                        {isSolved && (
+                          <span style={{ color: '#10b981', fontSize: '0.7rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            РЕШЕНО
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ 
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', 
+                        overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-h)',
+                        wordBreak: 'break-word', overflowWrap: 'anywhere'
+                      }}>
+                        {renderMath(task.question)}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+                      <span className="subtopic-badge" style={{ background: 'var(--surface)', border: '1px solid var(--card-border)', color: 'var(--text-p)' }}>{selectedSubtopic}</span>
+                      <div style={{ color: 'var(--accent)' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Empty State */}
+      {!loading && ((!selectedCategory && sortedCategories.length === 0) || 
+        (selectedCategory && !selectedSubtopic && Object.keys(categoriesMap[selectedCategory] || {}).length === 0) ||
+        (selectedCategory && selectedSubtopic && (!categoriesMap[selectedCategory]?.[selectedSubtopic] || categoriesMap[selectedCategory][selectedSubtopic].length === 0))) && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-p)' }}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', opacity: 0.5 }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <h3 style={{ fontSize: '1.2rem', color: 'var(--text-h)', marginBottom: '8px' }}>Задач не найдено</h3>
+          <p style={{ fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>Мы не смогли найти задачи по вашему запросу. Попробуйте изменить параметры поиска или сбросить фильтры.</p>
+        </motion.div>
+      )}
+      
+      {/* Loading State */}
+      {loading && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 20px' }}>
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} style={{ width: 40, height: 40, border: '4px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+        </div>
+      )}
     </div>
   );
 };
