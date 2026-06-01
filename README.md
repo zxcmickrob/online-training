@@ -7,14 +7,18 @@
 
 ---
 ### Быстрый запуск
+#### Настройка переменных
 ```bash
-# настройка переменных
 cd backend
 cp .env.example .env
 cd ..
-# сборка и запуск
+```
+#### Сборка и запуск
+```bash
 docker-compose up --build -d
-# миграцции и загрузка заданий
+```
+####  Миграцции и загрузка заданий
+```bash
 docker-compose exec backend flask db upgrade
 docker-compose exec backend python load_tasks.py
 ```
