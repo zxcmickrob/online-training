@@ -122,11 +122,11 @@ const Dashboard: React.FC = () => {
   const solvedCount = stats?.solved_count || 0;
 
   const getRank = (count: number) => {
-    if (count === 0) return 'НОВИЧОК';
-    if (count < 5) return 'УЧЕНИК';
-    if (count < 15) return 'ПРОФИ';
-    if (count < 30) return 'МАГИСТР';
-    return 'ЛЕГЕНДА';
+    if (count === 0) return 'Задания пока не были решены';
+    if (count < 30) return 'Начальный уровень';
+    if (count < 50) return 'Базовый уровень';
+    if (count < 100) return 'Повышенный уровень';
+    return 'Профильный уровень';
   };
 
   const getRankClass = (count: number) => {
@@ -151,18 +151,13 @@ const Dashboard: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <h1 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>
-            Привет, {stats?.username || (role === 'admin' ? 'Преподаватель' : 'Ученик')}! 👋
+            Привет, {stats?.username}!
           </h1>
-          <p style={{ color: 'var(--text-p)', margin: 0, fontSize: '1rem', maxWidth: '600px' }}>
-            {role === 'admin' 
-              ? 'Добро пожаловать в базу знаний. Здесь вы можете просматривать все доступные задания.' 
-              : 'Добро пожаловать в базу знаний. Выбирай нужную тему, решай задачи и повышай свой ранг.'}
-          </p>
+  
         </motion.div>
         
         {role !== 'admin' && (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-p)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Твой ранг</span>
             <div className={`rank-badge ${getRankClass(solvedCount)}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
               {getRank(solvedCount)}
             </div>
@@ -170,7 +165,7 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Breadcrumbs and Controls */}
+
       <div style={{ marginBottom: '24px' }}>
         <AnimatePresence mode="popLayout">
           {selectedCategory && (
@@ -233,9 +228,9 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content List */}
+
       <AnimatePresence mode="wait">
-        {/* VIEW: CATEGORIES */}
+
         {!selectedCategory && (
           <motion.div 
             key="categories"
@@ -286,7 +281,7 @@ const Dashboard: React.FC = () => {
           </motion.div>
         )}
 
-        {/* VIEW: SUBTOPICS */}
+
         {selectedCategory && !selectedSubtopic && (
           <motion.div 
             key="subtopics"
@@ -404,7 +399,6 @@ const Dashboard: React.FC = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-p)' }}>
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', opacity: 0.5 }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <h3 style={{ fontSize: '1.2rem', color: 'var(--text-h)', marginBottom: '8px' }}>Задач не найдено</h3>
-          <p style={{ fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto' }}>Мы не смогли найти задачи по вашему запросу. Попробуйте изменить параметры поиска или сбросить фильтры.</p>
         </motion.div>
       )}
       

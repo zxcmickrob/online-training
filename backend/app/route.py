@@ -181,20 +181,12 @@ def setup_routes(app):
 
         user = User.query.get_or_404(user_id)
         
-        # Don't let admin delete themselves
-        if str(user.id) == get_jwt_identity():
-             return jsonify({"message": "Нельзя удалить самого себя"}), 400
-
-        # Delete associated solved tasks first
-        SolvedTask.query.filter_by(user_id=user_id).delete()
-        
         db.session.delete(user)
         db.session.commit()
         return jsonify({"message": "Пользователь удален"}), 200
 
     @app.route('/tasks/<int:task_id>/ai-hint', methods=['POST'])
     def ai_hint(task_id):
-        # We don't require jwt here for demo purposes so it works even in demo mode if backend is up
         data = request.get_json()
         user_answer = data.get('answer', '').strip()
         
@@ -205,9 +197,6 @@ def setup_routes(app):
         
         yandex_api_key = os.environ.get("YANDEX_API_KEY")
         yandex_folder_id = os.environ.get("YANDEX_FOLDER_ID")
-        
-        if not yandex_api_key or not yandex_folder_id or yandex_api_key == "your_yandex_api_key_here":
-            return jsonify({"hint": "Для умных подсказок нужно указать ключи YANDEX_API_KEY и YANDEX_FOLDER_ID в файле .env бэкенда."}), 200
             
         try:
             prompt = f"""
@@ -241,7 +230,7 @@ def setup_routes(app):
                 "messages": [
                     {
                         "role": "system",
-                        "text": "Ты - добрый и умный репетитор по математике (профильный уровень)."
+                        "text": "Ты - репетитор по профильной математике с большим опытом."
                     },
                     {
                         "role": "user",
@@ -261,4 +250,4 @@ def setup_routes(app):
             print("AI Hint Error:", str(e))
             import traceback
             traceback.print_exc()
-            return jsonify({"hint": "Яндекс ИИ сейчас отдыхает, попробуй стандартные методы решения."}), 500
+            return jsonify({"hint": "Яндекс ИИ сейчас отдыхает :(("}), 500

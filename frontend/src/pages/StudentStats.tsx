@@ -59,11 +59,11 @@ const StudentStats: React.FC = () => {
   const topicStats = getTopicStats();
 
   const getRank = (count: number) => {
-    if (count === 0) return 'НОВИЧОК';
-    if (count < 5) return 'УЧЕНИК';
-    if (count < 15) return 'ПРОФИ';
-    if (count < 30) return 'МАГИСТР';
-    return 'ЛЕГЕНДА';
+    if (count === 0) return 'Задания пока не были решены';
+    if (count < 30) return 'Начальный уровень';
+    if (count < 50) return 'Базовый уровень';
+    if (count < 100) return 'Повышенный уровень';
+    return 'Профильный уровень';
   };
 
   return (
@@ -73,12 +73,12 @@ const StudentStats: React.FC = () => {
           <span style={{ color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.8rem' }}>
             Личные достижения
           </span>
-          <h1 style={{ marginTop: '4px' }}>Твоя статистика, {stats?.username}</h1>
+          <h1 style={{ marginTop: '4px' }}>Статистика</h1>
           
-          {/* Визуализация системы рангов */}
+
           <div style={{ marginTop: '24px', background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '500' }}>Прогресс ранга</span>
+              <span style={{ color: 'var(--text-p)', fontSize: '0.9rem', fontWeight: '500' }}>Прогресс</span>
               <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{getRank(solvedCount)}</span>
             </div>
             
@@ -98,7 +98,7 @@ const StudentStats: React.FC = () => {
                 />
               ))}
               
-              {/* Полоса прогресса (ограничена 25 для визуала) */}
+              {/* Полоса прогресса */}
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min((solvedCount / 25) * 100, 100)}%` }}
@@ -108,11 +108,11 @@ const StudentStats: React.FC = () => {
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-p)', fontWeight: '600' }}>
-              <span>НОВИЧОК (0)</span>
-              <span style={{ marginLeft: '-20px' }}>УЧЕНИК (3)</span>
-              <span>АЛГЕБРАИСТ (10)</span>
-              <span>МАСТЕР (20)</span>
-              <span>БОГ (25+)</span>
+              <span>НАЧАЛО</span>
+              <span style={{ marginLeft: '-20px' }}>БАЗА</span>
+              <span>ХОРОШО</span>
+              <span>ОТЛИЧНО</span>
+              <span>ПРОФИЛЬ</span>
             </div>
           </div>
         </motion.div>

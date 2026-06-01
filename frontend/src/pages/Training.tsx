@@ -61,23 +61,28 @@ const Training = () => {
 
   const checkAnswer = async () => {
     try {
-      const res = await api.post(`/tasks/${taskId}/check`, { answer: userAnswer });
-      if (res.data.is_correct) {
+      const res = await api.post(`/tasks/${taskId}/solve`, { answer: userAnswer });
+      if (res.status === 201 || res.status === 200) {
         setFeedback('success');
         toast.success('Правильно!');
       } else {
         setFeedback('error');
         toast.error('Неверный ответ');
       }
-    } catch (err) {
-      toast.error('Ошибка проверки');
+    } catch (err: any) {
+      setFeedback('error');
+      if (err.response && err.response.data && err.response.data.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error('Ошибка проверки');
+      }
     }
   };
 
   const getAiHint = async () => {
     setLoadingHint(true);
     try {
-      const res = await api.get(`/tasks/${taskId}/hint`);
+      const res = await api.post(`/tasks/${taskId}/ai-hint`, { answer: userAnswer });
       setAiHint(res.data.hint);
     } catch (err) {
       toast.error('Не удалось получить подсказку');

@@ -16,6 +16,14 @@ def load_tasks(filename):
    
         for index, row in df.iterrows():
             question_text = str(row['question']).strip()
+            
+  
+            raw_answer = row['answer']
+            if isinstance(raw_answer, float) and raw_answer.is_integer():
+                answer_text = str(int(raw_answer))
+            else:
+                answer_text = str(raw_answer).strip()
+
             exists = Task.query.filter_by(question=question_text).first()
    
             if not exists:
@@ -24,7 +32,7 @@ def load_tasks(filename):
                     title=str(row['title']),
                     subtopic=str(row['subtopic']),
                     question=question_text,
-                    answer=str(row['answer'])
+                    answer=answer_text
                 )
                 db.session.add(new_task)
                 added += 1
@@ -32,7 +40,7 @@ def load_tasks(filename):
                 skipped += 1
 
         db.session.commit()
-        print(f"Добавлено: {added}, Пропущено (уже были): {skipped}")
+        print(f"Добавлено: {added}, Пропущено: {skipped}")
 
 
 if __name__ == "__main__":

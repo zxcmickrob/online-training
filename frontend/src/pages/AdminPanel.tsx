@@ -45,7 +45,7 @@ const AdminPanel: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
-  // Helper to generate a consistent avatar color based on username
+
   const getAvatarColor = (username: string) => {
     const colors = ['#0ea5e9', '#3b82f6', '#0284c7', '#0369a1', '#0c4a6e', '#14b8a6', '#0d9488'];
     let hash = 0;
@@ -56,11 +56,11 @@ const AdminPanel: React.FC = () => {
   };
 
   const getRankInfo = (count: number) => {
-    if (count >= 30) return { label: 'ЛЕГЕНДА', color: 'url(#legend-grad)' };
-    if (count >= 15) return { label: 'МАГИСТР', color: '#d97706' };
-    if (count >= 5) return { label: 'ПРОФИ', color: '#2563eb' };
-    if (count >= 1) return { label: 'УЧЕНИК', color: '#059669' };
-    return { label: 'НОВИЧОК', color: '#64748b' };
+    if (count >= 100) return { label: 'Профильный уровень', color: 'url(#legend-grad)' };
+    if (count >= 50) return { label: 'Повышенный уровень', color: '#d97706' };
+    if (count >= 30) return { label: 'Базовый уровень', color: '#2563eb' };
+    if (count >= 1) return { label: 'Начальный уровень', color: '#059669' };
+    return { label: 'Задания пока не были решены', color: '#64748b' };
   };
 
   return (
@@ -77,10 +77,7 @@ const AdminPanel: React.FC = () => {
           <span style={{ color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.8rem', display: 'block', marginBottom: '8px' }}>
             Доступ: Преподаватель
           </span>
-          <h1 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>Статистика учеников</h1>
-          <p style={{ color: 'var(--text-p)', margin: 0, fontSize: '1rem', maxWidth: '600px' }}>
-            Управление пользователями платформы. Просматривайте прогресс, фильтруйте учеников и управляйте аккаунтами.
-          </p>
+          <h1 style={{ fontSize: '2.2rem'}}>Статистика учеников</h1>
         </motion.div>
       </div>
 
@@ -172,9 +169,9 @@ const AdminPanel: React.FC = () => {
                     {user.role === 'student' ? (
                       <div style={{ flex: '2 1 300px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-p)', fontWeight: '600' }}>
-                            Ранг: <span style={{ fill: rankInfo.color, color: typeof rankInfo.color === 'string' && !rankInfo.color.startsWith('url') ? rankInfo.color : 'var(--text-h)', fontWeight: '700' }}>{rankInfo.label}</span>
-                          </span>
+                          
+                            <span style={{ fill: rankInfo.color, color: typeof rankInfo.color === 'string' && !rankInfo.color.startsWith('url') ? rankInfo.color : 'var(--text-h)', fontWeight: '700' }}>{rankInfo.label}</span>
+                          
                           <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-h)' }}>
                             {user.solved_count} <span style={{ color: 'var(--text-p)', fontSize: '0.8rem', fontWeight: '500' }}>задач</span>
                           </span>
@@ -215,7 +212,6 @@ const AdminPanel: React.FC = () => {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-p)', background: 'var(--surface)', borderRadius: '12px', border: '1px dashed var(--card-border)' }}>
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', opacity: 0.5 }}><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
                 <h3 style={{ margin: '0 0 8px 0', color: 'var(--text-h)' }}>Пользователи не найдены</h3>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>Попробуйте изменить параметры поиска или фильтр ролей.</p>
               </motion.div>
             )}
           </div>

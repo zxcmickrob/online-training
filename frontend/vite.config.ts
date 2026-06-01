@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     allowedHosts: true,
     hmr: {
-      clientPort: 443 // Важно для работы через HTTPS туннели
+      clientPort: 443
     }
   }
 })

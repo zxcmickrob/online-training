@@ -41,9 +41,7 @@ const Login: React.FC = () => {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         style={{ textAlign: 'center', marginBottom: '40px' }}
       >
-        <span style={{ color: 'var(--accent)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.2em', fontSize: '0.85rem', display: 'block', marginBottom: '12px' }}>
-          Инновационная платформа
-        </span>
+
         <h1 style={{ 
           fontSize: '2.5rem', 
           lineHeight: '1.2', 
