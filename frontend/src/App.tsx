@@ -55,16 +55,16 @@ const ThemeToggle = () => {
 };
 
 const LogoIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
     <defs>
       <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#06b6d4" />
+        <stop offset="0%" stopColor="#6366f1" />
         <stop offset="100%" stopColor="#3b82f6" />
       </linearGradient>
     </defs>
-    <path stroke="url(#logo-grad)" d="M12 2L2 7l10 5 10-5-10-5z" />
-    <path stroke="url(#logo-grad)" d="M2 17l10 5 10-5" />
-    <path stroke="url(#logo-grad)" d="M2 12l10 5 10-5" />
+    <circle cx="12" cy="12" r="10" stroke="url(#logo-grad)" strokeWidth="1.5" strokeDasharray="3 3" />
+    <path d="M8 16V8L16 16V8" stroke="url(#logo-grad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="16" cy="8" r="1.5" fill="#10b981" />
   </svg>
 );
 
@@ -163,7 +163,7 @@ const AppLayout = () => {
           >
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <div style={{ marginLeft: '15px', fontFamily: 'Outfit', fontWeight: '900', fontSize: '1.2rem', background: 'var(--grad)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></div>
+          <div style={{ marginLeft: '15px', fontFamily: 'Outfit', fontWeight: '900', fontSize: '1.2rem', background: 'var(--grad)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>NEO STUDY</div>
         </div>
       )}
 
